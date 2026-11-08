@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { SymptomPayload, TriageResult, UrgencyLevel, UrgencyMeta } from '@/types/triage';
+import type { SymptomPayload, TriageResult, UrgencyLevel } from '@/types/triage';
 import {
   Send,
   Sparkles,
@@ -27,7 +27,9 @@ import {
 import DoctorLetterModal from './DoctorLetterModal';
 import BreathingExercise from '../calm/BreathingExercise';
 import RedFlagAlert from './RedFlagAlert';
-import { DoctorLetterData } from '@/app/api/chat/letter/route';
+import Logo from '@/components/brand/Logo';
+import { URGENCY_META } from '@/lib/urgency';
+import type { DoctorLetterData } from '@/types/letter';
 
 interface Message {
   id: string;
@@ -41,45 +43,6 @@ interface Props {
   formData: SymptomPayload;
   onReset: () => void;
 }
-
-const URGENCY_CONFIG: Record<UrgencyLevel, UrgencyMeta> = {
-  darurat: {
-    level: 'darurat',
-    label: 'Darurat Medis',
-    badgeColor: 'bg-rose-600 text-white shadow-rose-200',
-    borderColor: 'border-rose-400',
-    bgColor: 'bg-rose-50',
-    actionText: 'Segera ke IGD terdekat',
-    timeframe: 'SEKARANG',
-  },
-  segera: {
-    level: 'segera',
-    label: 'Periksa Segera',
-    badgeColor: 'bg-amber-500 text-white shadow-amber-200',
-    borderColor: 'border-amber-400',
-    bgColor: 'bg-amber-50',
-    actionText: 'Kunjungi klinik/dokter dalam 24 jam',
-    timeframe: 'Dalam 24 Jam',
-  },
-  terjadwal: {
-    level: 'terjadwal',
-    label: 'Periksa Terjadwal',
-    badgeColor: 'bg-blue-600 text-white shadow-blue-200',
-    borderColor: 'border-blue-300',
-    bgColor: 'bg-blue-50',
-    actionText: 'Buat janji dokter dalam beberapa hari',
-    timeframe: '2 – 3 Hari',
-  },
-  pantau_di_rumah: {
-    level: 'pantau_di_rumah',
-    label: 'Pantau Mandiri',
-    badgeColor: 'bg-emerald-600 text-white shadow-emerald-200',
-    borderColor: 'border-emerald-300',
-    bgColor: 'bg-emerald-50',
-    actionText: 'Perawatan mandiri di rumah',
-    timeframe: 'Mandiri',
-  },
-};
 
 const SUGGESTED_QUESTIONS = [
   'Apa pertolongan pertama yang bisa saya lakukan?',
@@ -106,17 +69,17 @@ export default function InteractiveAiChat({ result, formData, onReset }: Props) 
   const [isGeneratingLetter, setIsGeneratingLetter] = useState(false);
   const [doctorLetter, setDoctorLetter] = useState<DoctorLetterData | null>(null);
   const [showBreathing, setShowBreathing] = useState(false);
-  const [isLiveGemini, setIsLiveGemini] = useState<boolean | null>(null);
+  const [isLiveAI, setIsLiveAI] = useState<boolean | null>(null);
   const [sidebarTab, setSidebarTab] = useState<'triase' | 'napas'>('triase');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const meta = URGENCY_CONFIG[result.urgencyLevel] ?? URGENCY_CONFIG.pantau_di_rumah;
+  const meta = URGENCY_META[result.urgencyLevel] ?? URGENCY_META.pantau_di_rumah;
 
   // Pesan sambutan awal
   useEffect(() => {
-    const welcome = `Halo! Saya **TenangCek AI Companion** 🌿
+    const welcome = `Halo! Saya **Medivue AI Companion** 🌿
 
 Saya sudah menerima dan menganalisis keluhan **${formData.mainSymptom}** Anda (durasi: ${formData.duration || 'beberapa hari'}, intensitas: ${formData.severity || 'sedang'}).
 
@@ -186,7 +149,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
       }
 
       const isGemini = res.headers.get('x-ai-provider') === 'gemini';
-      setIsLiveGemini(isGemini);
+      setIsLiveAI(isGemini);
       if (!res.body) throw new Error('Respons AI kosong');
 
       const assistantId = `msg-${Date.now()}-ai`;
@@ -267,7 +230,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           urgencyLevel: result.urgencyLevel,
           urgencyLabel: meta.label,
         },
-        clinicalSummary: `Pasien mengalami ${formData.mainSymptom} selama ${formData.duration || 'beberapa hari'}, keparahan ${formData.severity || 'sedang'}. Telah dilakukan pemilahan triase dan konsultasi awal via TenangCek.`,
+        clinicalSummary: `Pasien mengalami ${formData.mainSymptom} selama ${formData.duration || 'beberapa hari'}, keparahan ${formData.severity || 'sedang'}. Telah dilakukan pemilahan triase dan konsultasi awal via Medivue.`,
         chatInsights: [
           `Keluhan utama: ${formData.mainSymptom}`,
           `Durasi: ${formData.duration || 'Beberapa hari'}`,
@@ -283,45 +246,137 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           'Kapan batas aman gejala ini mereda?',
           'Adakah pantangan aktivitas atau makanan?',
         ],
-        doctorNoteClosing: 'Catatan mandiri pasien disusun oleh TenangCek AI Companion.',
+        doctorNoteClosing: 'Catatan mandiri pasien disusun oleh Medivue AI Companion.',
       });
     } finally {
       setIsGeneratingLetter(false);
     }
   };
 
-  // Render markdown sederhana
+  // Render teks asisten dengan parser ringan. Tujuannya bukan markdown penuh,
+  // tapi memastikan simbol seperti **, ***, dan ## tidak pernah tampil mentah.
+  const renderInline = (text: string, keyPrefix: string) => {
+    const tokens = text.split(
+      /(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|\*[^*]+\*|_[^_]+_)/g
+    );
+
+    return tokens
+      .filter((token) => token !== '')
+      .map((token, index) => {
+        const key = `${keyPrefix}-${index}`;
+
+        if (token.startsWith('***') && token.endsWith('***')) {
+          return (
+            <strong key={key} className="font-semibold text-slate-900">
+              {token.slice(3, -3)}
+            </strong>
+          );
+        }
+        if (token.startsWith('**') && token.endsWith('**')) {
+          return (
+            <strong key={key} className="font-semibold text-slate-900">
+              {token.slice(2, -2)}
+            </strong>
+          );
+        }
+        if (token.startsWith('__') && token.endsWith('__')) {
+          return (
+            <strong key={key} className="font-semibold text-slate-900">
+              {token.slice(2, -2)}
+            </strong>
+          );
+        }
+        if (token.startsWith('`') && token.endsWith('`')) {
+          return (
+            <code key={key} className="rounded bg-slate-100 px-1.5 py-0.5 text-[12px] text-slate-700">
+              {token.slice(1, -1)}
+            </code>
+          );
+        }
+        if (token.startsWith('*') && token.endsWith('*')) {
+          return (
+            <em key={key} className="italic text-slate-700">
+              {token.slice(1, -1)}
+            </em>
+          );
+        }
+        if (token.startsWith('_') && token.endsWith('_')) {
+          return (
+            <em key={key} className="italic text-slate-700">
+              {token.slice(1, -1)}
+            </em>
+          );
+        }
+
+        // Bersihkan sisa penanda yang tidak berpasangan (mis. saat streaming).
+        return (
+          <React.Fragment key={key}>
+            {token.replace(/\*{2,}/g, '').replace(/^#{1,6}\s*/, '')}
+          </React.Fragment>
+        );
+      });
+  };
+
   const renderContent = (content: string) => {
     const lines = content.split('\n');
     return (
-      <div className="space-y-1.5 leading-relaxed text-sm">
+      <div className="space-y-1.5 text-sm leading-relaxed">
         {lines.map((line, idx) => {
-          if (!line.trim()) return <div key={idx} className="h-1" />;
+          const trimmed = line.replace(/\r$/, '').trim();
+          if (!trimmed) return <div key={idx} className="h-1.5" />;
 
-          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g).map((part, pIdx) => {
-            if (part.startsWith('**') && part.endsWith('**'))
-              return <strong key={pIdx} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
-            if (part.startsWith('*') && part.endsWith('*'))
-              return <em key={pIdx} className="italic text-slate-600">{part.slice(1, -1)}</em>;
-            return part;
-          });
+          // Garis pemisah: ---, ***, ___
+          if (/^([-*_])\1{2,}$/.test(trimmed)) {
+            return <hr key={idx} className="my-2 border-slate-200" />;
+          }
 
-          if (line.trim().startsWith('- ') || line.trim().startsWith('* '))
+          // Heading markdown: ## Judul, ### **Judul**
+          const heading = trimmed.match(/^(#{1,6})\s+(.*)$/);
+          if (heading) {
             return (
-              <div key={idx} className="flex items-start gap-2 pl-2">
-                <span className="text-emerald-500 font-bold mt-0.5">•</span>
-                <span>{parts}</span>
+              <p key={idx} className="pt-2 text-[13px] font-bold uppercase tracking-wide text-emerald-900 first:pt-0">
+                {renderInline(heading[2].trim(), `h-${idx}`)}
+              </p>
+            );
+          }
+
+          const body = trimmed;
+
+          // Bullet: - teks, * teks, • teks
+          const bullet = body.match(/^([-*•])\s+(.*)$/);
+          if (bullet) {
+            return (
+              <div key={idx} className="flex items-start gap-2 pl-1">
+                <span className="mt-[0.15rem] shrink-0 text-xs font-bold text-emerald-600">•</span>
+                <span className="min-w-0">{renderInline(bullet[2], `b-${idx}`)}</span>
               </div>
             );
+          }
 
-          if (/^\d+\.\s/.test(line.trim()))
+          // Daftar bernomor: 1. teks, 1) teks
+          const numbered = body.match(/^(\d+)[.)]\s+(.*)$/);
+          if (numbered) {
             return (
-              <div key={idx} className="flex items-start gap-2 pl-2">
-                <span>{parts}</span>
+              <div key={idx} className="flex items-start gap-2 pl-1">
+                <span className="mt-[0.05rem] shrink-0 text-xs font-bold text-emerald-700">
+                  {numbered[1]}.
+                </span>
+                <span className="min-w-0">{renderInline(numbered[2], `n-${idx}`)}</span>
               </div>
             );
+          }
 
-          return <p key={idx}>{parts}</p>;
+          // Kutipan: > teks
+          const quote = body.match(/^>\s?(.*)$/);
+          if (quote) {
+            return (
+              <p key={idx} className="border-l-2 border-emerald-300 pl-3 text-slate-600">
+                {renderInline(quote[1], `q-${idx}`)}
+              </p>
+            );
+          }
+
+          return <p key={idx}>{renderInline(body, `p-${idx}`)}</p>;
         })}
       </div>
     );
@@ -341,14 +396,9 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
             <ArrowLeft className="h-3.5 w-3.5" />
             Kembali ke Dashboard
           </Link>
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
-              <HeartPulse className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-bold text-slate-900 text-sm leading-tight">TenangCek</p>
-              <p className="text-[11px] text-slate-500">AI Health Triage</p>
-            </div>
+          <div>
+            <Logo size="sm" />
+            <p className="mt-2 text-[11px] text-slate-500">AI health triage</p>
           </div>
         </div>
 
@@ -469,7 +519,11 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               {/* Engine info */}
               <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
                 <Sparkles className="h-3 w-3 text-emerald-500" />
-                {isLiveGemini === true ? 'Powered by Gemini 3.6 Flash' : isLiveGemini === false ? 'AI Health Engine (fallback)' : 'TenangCek AI'}
+                {isLiveAI === true
+                  ? 'Medivue AI · mode langsung'
+                  : isLiveAI === false
+                    ? 'Medivue AI · mode pendamping'
+                    : 'Medivue AI'}
               </div>
             </div>
           ) : (
@@ -530,7 +584,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-bold text-slate-900 text-sm truncate">TenangCek AI Companion</p>
+                  <p className="font-bold text-slate-900 text-sm truncate">Medivue AI Companion</p>
                   <span className={`hidden sm:inline-block shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.badgeColor}`}>
                     {meta.label}
                   </span>
@@ -538,7 +592,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 <p className="text-[11px] text-slate-500 truncate">
                   {formData.mainSymptom} • {formData.severity ?? 'sedang'} •{' '}
                   <span className="text-emerald-700 font-semibold">
-                    {isLiveGemini ? 'Gemini 3.6 Flash' : 'AI Engine'}
+                    {isLiveAI === null ? 'Medivue AI' : isLiveAI ? 'AI aktif' : 'Mode pendamping'}
                   </span>
                 </p>
               </div>
@@ -562,6 +616,54 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               <span className="sm:hidden">Surat</span>
             </button>
           </div>
+        </div>
+
+        {/* Ringkasan triase ringkas untuk mobile */}
+        <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+          <details className="group">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${meta.badgeColor}`}>
+                  {meta.label}
+                </span>
+                <span className="truncate text-[11px] text-slate-500">{meta.actionText}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-90" />
+            </summary>
+
+            <div className="mt-3 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Analisis</p>
+                <p className="mt-1 text-xs leading-5 text-slate-700">{result.reasoning}</p>
+              </div>
+              {result.nextSteps && result.nextSteps.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Langkah berikutnya</p>
+                  <ul className="mt-1.5 space-y-1 text-xs text-slate-700">
+                    {result.nextSteps.slice(0, 3).map((step, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-emerald-500" />
+                        {step}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {result.dangerSignsToWatch && result.dangerSignsToWatch.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Tanda bahaya</p>
+                  <ul className="mt-1.5 space-y-1 text-xs text-rose-900">
+                    {result.dangerSignsToWatch.slice(0, 3).map((sign, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-rose-400" />
+                        {sign}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </details>
         </div>
 
         {/* Red Flag Alert */}
@@ -629,7 +731,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               </div>
               <div className="rounded-2xl rounded-bl-sm bg-white border border-slate-200 shadow-xs px-4 py-3 flex items-center gap-2 text-xs text-slate-500">
                 <Loader2 className="h-4 w-4 animate-spin text-emerald-600 shrink-0" />
-                TenangCek sedang menyusun jawaban...
+                Medivue sedang menyusun jawaban...
               </div>
             </div>
           )}

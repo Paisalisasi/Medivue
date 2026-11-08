@@ -3,52 +3,52 @@
  */
 
 export const TRIAGE_JSON_SCHEMA = {
-  type: 'object',
+  type: "object",
   properties: {
     urgencyLevel: {
-      type: 'string',
-      enum: ['darurat', 'segera', 'terjadwal', 'pantau_di_rumah'],
+      type: "string",
+      enum: ["darurat", "segera", "terjadwal", "pantau_di_rumah"],
     },
-    reasoning: { type: 'string' },
+    reasoning: { type: "string" },
     commonCauses: {
-      type: 'array',
-      items: { type: 'string' },
+      type: "array",
+      items: { type: "string" },
     },
     dangerSignsToWatch: {
-      type: 'array',
-      items: { type: 'string' },
+      type: "array",
+      items: { type: "string" },
     },
     nextSteps: {
-      type: 'array',
-      items: { type: 'string' },
+      type: "array",
+      items: { type: "string" },
     },
     doctorSummary: {
-      type: 'object',
+      type: "object",
       properties: {
-        summary: { type: 'string' },
+        summary: { type: "string" },
         threeQuestionsForDoctor: {
-          type: 'array',
-          items: { type: 'string' },
+          type: "array",
+          items: { type: "string" },
         },
       },
-      required: ['summary', 'threeQuestionsForDoctor'],
+      required: ["summary", "threeQuestionsForDoctor"],
     },
     calmSupport: {
-      type: 'object',
+      type: "object",
       properties: {
-        message: { type: 'string' },
-        suggestBreathingExercise: { type: 'boolean' },
+        message: { type: "string" },
+        suggestBreathingExercise: { type: "boolean" },
       },
-      required: ['message', 'suggestBreathingExercise'],
+      required: ["message", "suggestBreathingExercise"],
     },
   },
   required: [
-    'urgencyLevel',
-    'reasoning',
-    'commonCauses',
-    'dangerSignsToWatch',
-    'nextSteps',
-    'doctorSummary',
-    'calmSupport',
+    "urgencyLevel",
+    "reasoning",
+    "commonCauses",
+    "dangerSignsToWatch",
+    "nextSteps",
+    "doctorSummary",
+    "calmSupport",
   ],
 };

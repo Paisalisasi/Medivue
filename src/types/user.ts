@@ -1,5 +1,5 @@
 /**
- * Profil Personalisasi User TenangCek
+ * Profil Personalisasi User Medivue
  * Minimal & Opt-in untuk privasi kesehatan (Halaman 2 Bagian 6)
  */
 

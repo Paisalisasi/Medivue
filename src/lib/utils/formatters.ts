@@ -1,5 +1,5 @@
 /**
- * Utility Formatters TenangCek
+ * Utility Formatters Medivue
  */
 
 export function formatDateIndo(dateStr: string): string {

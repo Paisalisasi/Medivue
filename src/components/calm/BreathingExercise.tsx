@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Wind, Play, Pause, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Pause, Play, RefreshCw, Wind } from 'lucide-react';
 
 export default function BreathingExercise() {
   const [isActive, setIsActive] = useState(false);
@@ -32,48 +32,44 @@ export default function BreathingExercise() {
     return () => clearInterval(interval);
   }, [isActive, phase]);
 
-  const getPhaseText = () => {
-    switch (phase) {
-      case 'tarik':
-        return 'Tarik Napas Perlahan...';
-      case 'tahan':
-        return 'Tahan Sebentar...';
-      case 'hembuskan':
-        return 'Hembuskan Napas Rileks...';
-    }
-  };
+  const phaseText =
+    phase === 'tarik'
+      ? 'Tarik napas perlahan…'
+      : phase === 'tahan'
+        ? 'Tahan sebentar…'
+        : 'Hembuskan dengan rileks…';
 
-  const getPhaseColor = () => {
-    switch (phase) {
-      case 'tarik':
-        return 'bg-emerald-500 scale-125';
-      case 'tahan':
-        return 'bg-teal-500 scale-125';
-      case 'hembuskan':
-        return 'bg-sky-400 scale-100';
-    }
+  const phaseColor =
+    phase === 'tarik'
+      ? 'bg-emerald-500 scale-125'
+      : phase === 'tahan'
+        ? 'bg-teal-500 scale-125'
+        : 'bg-sky-400 scale-100';
+
+  const reset = () => {
+    setPhase('tarik');
+    setSecondsLeft(4);
   };
 
   return (
-    <div className="rounded-2xl border border-emerald-100 bg-gradient-to-b from-emerald-50/70 to-teal-50/40 p-6 text-center shadow-sm">
-      <div className="flex items-center justify-center gap-2 text-emerald-800 font-semibold text-sm mb-2">
+    <div className="rounded-2xl border border-emerald-100 bg-gradient-to-b from-emerald-50/70 to-teal-50/40 p-6 text-center">
+      <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-emerald-800">
         <Wind className="h-4 w-4" />
-        <span>Calm Support: Latihan Napas Sejenak</span>
+        <span>Latihan napas sejenak</span>
       </div>
-      <p className="text-xs text-slate-600 max-w-md mx-auto mb-6">
-        Jika Anda merasa tegang atau cemas, luangkan 1 menit untuk mengatur ritme napas agar detak jantung dan pikiran lebih tenang.
+      <p className="mx-auto mb-6 max-w-md text-xs leading-5 text-slate-600">
+        Kalau dada terasa tegang atau pikiran penuh, luangkan satu menit untuk mengatur ritme napas.
       </p>
 
-      {/* Visual Circle */}
-      <div className="relative flex h-44 w-44 mx-auto items-center justify-center">
+      <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
         <div
-          className={`absolute h-36 w-36 rounded-full transition-all duration-1000 ease-in-out opacity-20 ${
-            isActive ? getPhaseColor() : 'bg-emerald-300 scale-100'
+          className={`absolute h-36 w-36 rounded-full opacity-20 transition-all duration-1000 ease-in-out ${
+            isActive ? phaseColor : 'bg-emerald-300 scale-100'
           }`}
         />
         <div
           className={`flex h-28 w-28 flex-col items-center justify-center rounded-full text-white shadow-md transition-all duration-1000 ease-in-out ${
-            isActive ? getPhaseColor() : 'bg-emerald-600 scale-100'
+            isActive ? phaseColor : 'bg-emerald-600 scale-100'
           }`}
         >
           <span className="text-xs font-medium uppercase tracking-wider">
@@ -83,35 +79,35 @@ export default function BreathingExercise() {
         </div>
       </div>
 
-      <div className="mt-4 font-medium text-slate-700 text-sm h-6">
-        {isActive ? getPhaseText() : 'Tekan tombol untuk memulai latihan napas'}
+      <div className="mt-4 h-6 text-sm font-medium text-slate-700">
+        {isActive ? phaseText : 'Tekan tombol untuk memulai latihan napas'}
       </div>
 
-      {/* Controls */}
       <div className="mt-4 flex items-center justify-center gap-3">
         <button
           type="button"
           onClick={() => setIsActive(!isActive)}
-          className="flex items-center gap-1.5 rounded-full bg-emerald-600 px-5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
+          className="flex items-center gap-1.5 rounded-full bg-emerald-700 px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800"
         >
           {isActive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-          {isActive ? 'Jeda' : 'Mulai Latihan'}
+          {isActive ? 'Jeda' : 'Mulai latihan'}
         </button>
 
         {isActive && (
           <button
             type="button"
-            onClick={() => {
-              setPhase('tarik');
-              setSecondsLeft(4);
-            }}
-            className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 transition"
+            onClick={reset}
+            className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 transition hover:bg-slate-50"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Reset
           </button>
         )}
       </div>
+
+      <p className="mt-4 text-[11px] leading-5 text-slate-500">
+        Latihan ini untuk menenangkan diri, bukan menggantikan bantuan medis.
+      </p>
     </div>
   );
 }

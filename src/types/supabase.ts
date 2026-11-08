@@ -1,5 +1,5 @@
 /**
- * Tipe Data Skema Database Supabase TenangCek
+ * Tipe Data Skema Database Supabase Medivue
  * Sesuai Dokumen IMK Halaman 5 Bagian 11
  */
 

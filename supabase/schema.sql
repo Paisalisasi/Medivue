@@ -1,5 +1,5 @@
 -- =========================================================================
--- TENANGCEK DATABASE SCHEMA (Supabase Postgres)
+-- MEDIVUE DATABASE SCHEMA (Supabase Postgres)
 -- Sesuai Dokumen IMK Halaman 5 Bagian 11: Struktur Data & Row Level Security
 -- =========================================================================
 

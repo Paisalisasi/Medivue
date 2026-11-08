@@ -15,7 +15,7 @@ interface Props {
 export default function DoctorSummaryModal({ doctorSummary, urgencyLabel, onClose }: Props) {
   const [copied, setCopied] = useState(false);
 
-  const fullTextToCopy = `[Ringkasan Gejala TenangCek untuk Dokter]
+  const fullTextToCopy = `[Ringkasan Gejala Medivue untuk Dokter]
 Status Triage: ${urgencyLabel}
 
 Ringkasan:

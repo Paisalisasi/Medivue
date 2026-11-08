@@ -14,11 +14,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   const isFullscreen = FULLSCREEN_ROUTES.some((route) => pathname?.startsWith(route));
 
   if (isFullscreen) {
-    return (
-      <div className="h-screen w-screen overflow-hidden">
-        {children}
-      </div>
-    );
+    return <div className="min-h-screen w-full">{children}</div>;
   }
 
   return (

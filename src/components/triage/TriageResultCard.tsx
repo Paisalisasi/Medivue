@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TriageResult, UrgencyLevel, UrgencyMeta } from '@/types/triage';
+import type { TriageResult, UrgencyLevel } from '@/types/triage';
+import { URGENCY_META } from '@/lib/urgency';
 import { 
   AlertTriangle, 
   Clock, 
@@ -16,52 +17,13 @@ import {
 } from 'lucide-react';
 import DoctorSummaryModal from './DoctorSummaryModal';
 
-const URGENCY_CONFIG: Record<UrgencyLevel, UrgencyMeta> = {
-  darurat: {
-    level: 'darurat',
-    label: 'Darurat Medis Segera',
-    badgeColor: 'bg-rose-600 text-white',
-    borderColor: 'border-rose-400',
-    bgColor: 'bg-rose-50/60',
-    actionText: 'Segera ke IGD terdekat atau hubungi 119 sekarang',
-    timeframe: 'SEKARANG (Menit ke Menit)',
-  },
-  segera: {
-    level: 'segera',
-    label: 'Perlu Pemeriksaan Segera',
-    badgeColor: 'bg-amber-600 text-white',
-    borderColor: 'border-amber-400',
-    bgColor: 'bg-amber-50/60',
-    actionText: 'Kunjungi klinik atau dokter umum dalam 24 jam ke depan',
-    timeframe: 'Dalam 24 Jam',
-  },
-  terjadwal: {
-    level: 'terjadwal',
-    label: 'Perlu Dicek (Terjadwal)',
-    badgeColor: 'bg-blue-600 text-white',
-    borderColor: 'border-blue-300',
-    bgColor: 'bg-blue-50/50',
-    actionText: 'Buat janji temu dengan dokter umum dalam beberapa hari ke depan',
-    timeframe: 'Dalam 2 - 3 Hari',
-  },
-  pantau_di_rumah: {
-    level: 'pantau_di_rumah',
-    label: 'Pantau di Rumah',
-    badgeColor: 'bg-emerald-600 text-white',
-    borderColor: 'border-emerald-300',
-    bgColor: 'bg-emerald-50/50',
-    actionText: 'Kemungkinan kondisi ringan. Rawat mandiri dan pantau tanda eskalasi',
-    timeframe: 'Perawatan Mandiri',
-  },
-};
-
 interface Props {
   result: TriageResult;
 }
 
 export default function TriageResultCard({ result }: Props) {
   const [showDoctorModal, setShowDoctorModal] = useState(false);
-  const config = URGENCY_CONFIG[result.urgencyLevel] || URGENCY_CONFIG.pantau_di_rumah;
+  const config = URGENCY_META[result.urgencyLevel] ?? URGENCY_META.pantau_di_rumah;
 
   const getUrgencyIcon = () => {
     switch (result.urgencyLevel) {

@@ -16,7 +16,8 @@ import {
   LayoutDashboard,
   MessageSquare
 } from 'lucide-react';
-import { DoctorLetterData } from '@/app/api/chat/letter/route';
+import type { DoctorLetterData } from '@/types/letter';
+import { readLetters, saveLetters } from '@/lib/storage';
 
 interface Props {
   letter: DoctorLetterData;
@@ -43,7 +44,7 @@ export default function DoctorLetterModal({ letter, onClose }: Props) {
 
   const fullTextToCopy = `=====================================================
 LEMBAR CATATAN KELUHAN PASIEN & PENGANTAR KONSULTASI MEDIS
-Dihasilkan oleh: TenangCek AI Health Companion
+Dihasilkan oleh: Medivue AI Health Companion
 =====================================================
 
 No. Dokumen : ${letter.documentId}
@@ -90,11 +91,9 @@ ${letter.doctorNoteClosing}
   };
 
   const handleSaveAndDashboard = () => {
-    // Simpan ringkasan surat ke riwayat sesi jika diperlukan
     try {
-      const cacheKey = `tenangcek_doctor_letters`;
-      const existing = JSON.parse(localStorage.getItem(cacheKey) || '[]');
-      localStorage.setItem(cacheKey, JSON.stringify([letter, ...existing]));
+      const existing = readLetters<DoctorLetterData>();
+      saveLetters([letter, ...existing]);
     } catch (e) {
       console.warn('Gagal menyimpan surat ke cache', e);
     }
@@ -162,7 +161,7 @@ ${letter.doctorNoteClosing}
                 </div>
                 <div>
                   <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 block">
-                    TenangCek Clinical Triage
+                    Medivue Clinical Triage
                   </span>
                   <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
                     LEMBAR CATATAN KELUHAN PASIEN
@@ -305,7 +304,7 @@ ${letter.doctorNoteClosing}
               {letter.doctorNoteClosing}
             </p>
             <div className="text-right">
-              <span className="font-semibold text-slate-600 block">Sistem TenangCek Triase Medis</span>
+              <span className="font-semibold text-slate-600 block">Sistem Medivue Triase Medis</span>
               <span>Verifikasi Otomatis AI Triage</span>
             </div>
           </div>

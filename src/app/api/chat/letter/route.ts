@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getGeminiClient } from '@/lib/gemini/client';
+import { GEMINI_FAST_THINKING } from '@/lib/gemini/config';
+import { withModelFallback } from '@/lib/gemini/models';
+import type { DoctorLetterData } from '@/types/letter';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -23,25 +26,6 @@ interface LetterRequestBody {
   };
 }
 
-export interface DoctorLetterData {
-  documentId: string;
-  generatedAt: string;
-  patientOverview: {
-    mainSymptom: string;
-    duration: string;
-    severity: string;
-    accompanyingSymptoms: string[];
-    urgencyLevel: string;
-    urgencyLabel: string;
-  };
-  clinicalSummary: string;
-  chatInsights: string[];
-  dangerSignsToWatch: string[];
-  homeCareTried: string[];
-  suggestedQuestionsForDoctor: string[];
-  doctorNoteClosing: string;
-}
-
 const URGENCY_LABELS: Record<string, string> = {
   darurat: 'Darurat Medis (Emergency)',
   segera: 'Pemeriksaan Segera 24 Jam (Urgent)',
@@ -62,7 +46,7 @@ export async function POST(request: Request) {
     const accompanying = triageContext?.accompanyingSymptoms || [];
 
     const now = new Date();
-    const documentId = `TC-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const documentId = `MV-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
     const generatedAt = now.toLocaleString('id-ID', {
       dateStyle: 'full',
       timeStyle: 'short',
@@ -101,19 +85,25 @@ Rangkum seluruh keluhan, riwayat onset, faktor pencetus/pereda, serta kekhawatir
   "dangerSignsToWatch": ["2-3 tanda bahaya fisik (red flags) yang relevan untuk diobservasi lebih lanjut oleh dokter"],
   "homeCareTried": ["2-3 tindakan pertolongan pertama, hidrasi, istirahat, atau konsumsi obat bebas yang telah dilakukan pasien di rumah"],
   "suggestedQuestionsForDoctor": ["3-4 pertanyaan klinis cerdas dan terarah yang dianjurkan diajukan pasien ke dokter saat tatap muka"],
-  "doctorNoteClosing": "Catatan singkat profesional dari TenangCek untuk dokter pemeriksa"
+  "doctorNoteClosing": "Catatan singkat profesional dari Medivue untuk dokter pemeriksa"
 }
 Output HARUS JSON murni tanpa markdown pembungkus.
 `;
 
-        const response = await client.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          config: {
-            responseMimeType: 'application/json',
-            temperature: 0.2,
-          },
-        });
+        const response = await withModelFallback((model) =>
+          client.models.generateContent({
+            model,
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            config: {
+              systemInstruction:
+                'Anda adalah asisten triase klinis yang menyusun ringkasan anamnesis awal untuk dokter. Gunakan bahasa Indonesia profesional, singkat, dan faktual. Jangan menambahkan diagnosis pasti. Semua nilai teks harus berupa teks biasa tanpa markdown.',
+              responseMimeType: 'application/json',
+              temperature: 0.2,
+              maxOutputTokens: 1600,
+              thinkingConfig: GEMINI_FAST_THINKING,
+            },
+          })
+        );
 
         const raw = response.text || '{}';
         parsedResult = JSON.parse(raw);
@@ -152,14 +142,14 @@ Output HARUS JSON murni tanpa markdown pembungkus.
       homeCareTried: parsedResult.homeCareTried || [
         'Hidrasi cairan air putih hangat berkala',
         'Istirahat fisik dan pembatasan aktivitas berat',
-        'Pemantauan harian gejala melalui TenangCek Symptom Diary',
+        'Pemantauan harian gejala melalui Medivue Symptom Diary',
       ],
       suggestedQuestionsForDoctor: parsedResult.suggestedQuestionsForDoctor || [
         'Apakah gejala ini mengindikasikan kondisi yang membutuhkan tes diagnostik penunjang?',
         'Berapa lama batas waktu wajar gejala ini sembuh dengan perawatan standar?',
         'Adakah pantangan makanan atau aktivitas spesifik yang wajib dihindari selama masa pemulihan?',
       ],
-      doctorNoteClosing: parsedResult.doctorNoteClosing || 'Lembar pengantar ini dibuat otomatis oleh sistem TenangCek AI Companion sebagai sarana anamnesis awal mandiri pasien.',
+      doctorNoteClosing: parsedResult.doctorNoteClosing || 'Lembar pengantar ini dibuat otomatis oleh sistem Medivue AI Companion sebagai sarana anamnesis awal mandiri pasien.',
     };
 
     return NextResponse.json({
@@ -221,6 +211,6 @@ function generateFallbackDoctorLetter(
       'Tanda-tanda apa yang mengharuskan saya segera datang kembali ke fasilitas gawat darurat?',
     ],
     doctorNoteClosing:
-      'Dokumen ini disusun sebagai ringkasan komunikasi keluhan awal pasien dari TenangCek AI Health Companion untuk mendukung efisiensi anamnesis dokter pemeriksa.',
+      'Dokumen ini disusun sebagai ringkasan komunikasi keluhan awal pasien dari Medivue AI Health Companion untuk mendukung efisiensi anamnesis dokter pemeriksa.',
   };
 }

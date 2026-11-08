@@ -1,4 +1,4 @@
-# TenangCek 🌿 — AI Health Triage Companion
+# Medivue 🌿 — AI Health Triage Companion
 
 > **"Bantu user memutuskan langkah berikutnya dengan tenang, bukan menebak penyakit."**  
 > Proyek Interaksi Manusia dan Komputer (IMK) — Solusi untuk mengatasi kecemasan akibat *self-diagnosis* di internet (*cyberchondria*).
@@ -97,9 +97,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 
 # Backend Server Only (Aman, tidak bocor ke client)
 GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-3.5-flash
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
-*(Catatan: Jika `GEMINI_API_KEY` belum diisi, TenangCek sudah dilengkapi **fallback engine cerdas** sehingga alur cek gejala dan red flag tetap dapat diuji coba sepenuhnya tanpa kendala).*
+*(Catatan: Jika `GEMINI_API_KEY` belum diisi, Medivue sudah dilengkapi **fallback engine cerdas** sehingga alur cek gejala dan red flag tetap dapat diuji coba sepenuhnya tanpa kendala).*
 
 ### 3. Setup Database Supabase (Opsional)
 Jalankan isi file [schema.sql](file:///c:/Users/Faishal%20Pratama/KesehatanKu/supabase/schema.sql) pada **SQL Editor** di dashboard Supabase Anda untuk membuat 4 tabel dengan proteksi *Row Level Security (RLS)*.

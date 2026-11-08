@@ -3,7 +3,9 @@ import { SymptomPayload, TriageResult } from '@/types/triage';
 import { checkRedFlags } from '@/lib/rules/redFlags';
 import { validateAndEnforceSafety } from '@/lib/rules/safetyLayer';
 import { getGeminiClient } from '@/lib/gemini/client';
-import { TENANGCEK_SYSTEM_PROMPT, buildTriagePrompt } from '@/lib/gemini/prompts';
+import { GEMINI_FAST_THINKING } from '@/lib/gemini/config';
+import { withModelFallback } from '@/lib/gemini/models';
+import { MEDIVUE_SYSTEM_PROMPT, buildTriagePrompt } from '@/lib/gemini/prompts';
 import { TRIAGE_JSON_SCHEMA } from '@/lib/gemini/schemas';
 
 export async function POST(request: Request) {
@@ -65,17 +67,22 @@ export async function POST(request: Request) {
     } else {
       try {
         const client = getGeminiClient();
-        const response = await client.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [
-            { role: 'user', parts: [{ text: TENANGCEK_SYSTEM_PROMPT }, { text: buildTriagePrompt(payload) }] },
-          ],
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: TRIAGE_JSON_SCHEMA,
-            temperature: 0.2, // Rendah untuk stabilitas & konsistensi medis
-          },
-        });
+        const response = await withModelFallback((model) =>
+          client.models.generateContent({
+            model,
+            contents: [
+              { role: 'user', parts: [{ text: buildTriagePrompt(payload) }] },
+            ],
+            config: {
+              systemInstruction: MEDIVUE_SYSTEM_PROMPT,
+              responseMimeType: 'application/json',
+              responseSchema: TRIAGE_JSON_SCHEMA,
+              temperature: 0.2, // Rendah untuk stabilitas & konsistensi medis
+              maxOutputTokens: 1200,
+              thinkingConfig: GEMINI_FAST_THINKING,
+            },
+          })
+        );
 
         const rawText = response.text || '{}';
         aiTriageResult = JSON.parse(rawText) as TriageResult;
@@ -151,6 +158,6 @@ function createFallbackTriageResult(payload: SymptomPayload): TriageResult {
         'Kekhawatiran Anda sangat wajar, tetapi sebagian besar gejala semacam ini bisa pulih dengan waktu dan istirahat. Tarik napas perlahan, Anda sudah melakukan langkah pencegahan yang tepat.',
       suggestBreathingExercise: true,
     },
-    confidenceNotes: 'Saran dihasilkan oleh Triage Engine Standar TenangCek.',
+    confidenceNotes: 'Saran dihasilkan oleh Medivue Triage Engine.',
   };
 }

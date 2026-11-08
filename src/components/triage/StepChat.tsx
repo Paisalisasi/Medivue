@@ -2,171 +2,247 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { SymptomPayload, TriageResult } from '@/types/triage';
-import { Send, ArrowRight, ArrowLeft, Loader2, Sparkles, AlertCircle, LayoutDashboard, HeartPulse } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ClipboardList,
+  HeartPulse,
+  LayoutDashboard,
+  Loader2,
+  PhoneCall,
+  ShieldCheck,
+  Sparkles,
+  Wind,
+} from 'lucide-react';
+import Logo from '@/components/brand/Logo';
 import AnxietySlider from './AnxietySlider';
-import RedFlagAlert from './RedFlagAlert';
-import TriageResultCard from './TriageResultCard';
-import BreathingExercise from '../calm/BreathingExercise';
 import InteractiveAiChat from './InteractiveAiChat';
 import { useAuth } from '@/contexts/AuthContext';
+import { readSessions, saveSessions } from '@/lib/storage';
+import type { SymptomPayload, TriageResult } from '@/types/triage';
+import type { SessionHistoryItem } from '@/types/session';
 
-interface StepQuestion {
-  step: number;
-  title: string;
-  question: string;
-  helper: string;
-  type: 'text' | 'options' | 'anxiety';
-  quickChips: string[];
-}
+type Stage = 'intro' | 'questions' | 'review';
 
-const STEPS: StepQuestion[] = [
+const TOTAL_STEPS = 5;
+const NO_ACCOMPANYING = 'Tidak ada keluhan lain';
+
+const INITIAL_FORM: SymptomPayload = {
+  mainSymptom: '',
+  duration: '',
+  severity: 'sedang',
+  accompanyingSymptoms: [],
+  anxietyBefore: 3,
+};
+
+const STEP_META = [
+  { title: 'Gejala utama', helper: 'Mulai dari yang paling terasa.' },
+  { title: 'Durasi', helper: 'Seberapa lama sudah berlangsung?' },
+  { title: 'Keparahan', helper: 'Seberapa mengganggu aktivitasmu?' },
+  { title: 'Gejala penyerta', helper: 'Boleh lebih dari satu.' },
+  { title: 'Tingkat kecemasan', helper: 'Supaya kami bisa menyesuaikan nada.' },
+];
+
+const SYMPTOM_CHIPS = [
+  'Sakit kepala',
+  'Demam',
+  'Batuk & pilek',
+  'Nyeri perut',
+  'Pusing / kleyengan',
+  'Nyeri dada tertekan',
+  'Mual & muntah',
+];
+
+const DURATION_OPTIONS = [
+  'Baru beberapa jam',
+  '1 – 2 hari',
+  '3 – 5 hari',
+  'Lebih dari 1 minggu',
+];
+
+const SEVERITY_OPTIONS: {
+  value: NonNullable<SymptomPayload['severity']>;
+  label: string;
+  description: string;
+  tone: string;
+}[] = [
   {
-    step: 1,
-    title: 'Gejala Utama',
-    question: 'Apa gejala atau keluhan utama yang paling Anda rasakan saat ini?',
-    helper: 'Tuliskan secara bebas atau pilih salah satu gejala yang umum di bawah.',
-    type: 'text',
-    quickChips: ['Sakit Kepala', 'Demam', 'Batuk & Flu', 'Nyeri Perut', 'Pusing Kleyengan', 'Nyeri Dada Tertekan', 'Mual & Muntah'],
+    value: 'ringan',
+    label: 'Ringan',
+    description: 'Masih bisa beraktivitas seperti biasa.',
+    tone: 'border-emerald-200 bg-emerald-50/60 text-emerald-950',
   },
   {
-    step: 2,
-    title: 'Durasi',
-    question: 'Sudah berapa lama gejala tersebut Anda rasakan?',
-    helper: 'Durasi waktu membantu sistem memahami seberapa mendesak kondisinya.',
-    type: 'options',
-    quickChips: ['Baru beberapa jam', '1 - 2 hari', '3 - 5 hari', 'Lebih dari 1 minggu'],
+    value: 'sedang',
+    label: 'Sedang',
+    description: 'Cukup mengganggu, butuh istirahat sesekali.',
+    tone: 'border-amber-200 bg-amber-50/60 text-amber-950',
   },
   {
-    step: 3,
-    title: 'Tingkat Keparahan',
-    question: 'Seberapa besar gejala ini mengganggu kegiatan harian Anda?',
-    helper: 'Pilih tingkat yang paling menggambarkan kondisi fisik Anda saat ini.',
-    type: 'options',
-    quickChips: [
-      'Ringan (Masih bisa beraktivitas seperti biasa)',
-      'Sedang (Cukup mengganggu, butuh istirahat sesekali)',
-      'Berat (Sangat mengganggu, sulit bangun atau beraktivitas)',
-    ],
-  },
-  {
-    step: 4,
-    title: 'Gejala Penyerta',
-    question: 'Apakah ada gejala lain yang muncul bersamaan?',
-    helper: 'Misalnya demam, lemas, nafsu makan turun, atau tidak ada keluhan lain.',
-    type: 'text',
-    quickChips: ['Tidak ada keluhan lain', 'Badan lemas', 'Nafsu makan turun', 'Nyeri otot / pegal', 'Sulit tidur'],
-  },
-  {
-    step: 5,
-    title: 'Check-in Kecemasan',
-    question: 'Sebelum melihat panduan langkah, seberapa cemas Anda mengenai gejala ini?',
-    helper: 'Kami gunakan skala ini untuk menyesuaikan gaya bahasa dan saran ketenangan.',
-    type: 'anxiety',
-    quickChips: [],
+    value: 'berat',
+    label: 'Berat',
+    description: 'Sangat mengganggu, sulit beraktivitas.',
+    tone: 'border-rose-200 bg-rose-50/60 text-rose-950',
   },
 ];
 
+const ACCOMPANYING_OPTIONS = [
+  NO_ACCOMPANYING,
+  'Badan lemas',
+  'Nafsu makan turun',
+  'Nyeri otot / pegal',
+  'Sulit tidur',
+  'Mual',
+  'Demam',
+];
+
+const ANXIETY_LABELS = ['Sangat tenang', 'Sedikit khawatir', 'Cukup cemas', 'Cemas tinggi', 'Sangat panik'];
+
 export default function StepChat() {
   const { user } = useAuth();
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [formData, setFormData] = useState<SymptomPayload>({
-    mainSymptom: '',
-    duration: '',
-    severity: 'sedang',
-    accompanyingSymptoms: [],
-    anxietyBefore: 3,
-  });
-  const [textInput, setTextInput] = useState('');
+  const [stage, setStage] = useState<Stage>('intro');
+  const [stepIndex, setStepIndex] = useState(0);
+  const [formData, setFormData] = useState<SymptomPayload>(INITIAL_FORM);
+  const [symptomInput, setSymptomInput] = useState('');
+  const [accompanyingInput, setAccompanyingInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<TriageResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const step = STEPS[currentStepIndex];
+  const updateForm = (patch: Partial<SymptomPayload>) => {
+    setFormData((previous) => ({ ...previous, ...patch }));
+  };
 
-  const handleNext = async (customValue?: string) => {
+  const startQuestions = () => {
+    setSymptomInput(formData.mainSymptom ?? '');
     setErrorMessage(null);
-    const value = (customValue !== undefined ? customValue : textInput).trim();
+    setStage('questions');
+  };
 
-    // Validasi input
-    if (step.step === 1 && !value && !formData.mainSymptom) {
-      setErrorMessage('Mohon isi atau pilih keluhan utama Anda terlebih dahulu.');
+  const goToStep = (index: number) => {
+    if (index < 0 || index > stepIndex) return;
+    setStepIndex(index);
+    setErrorMessage(null);
+    if (index === 0) setSymptomInput(formData.mainSymptom ?? '');
+  };
+
+  const toggleAccompanying = (symptom: string) => {
+    setFormData((previous) => {
+      const current = previous.accompanyingSymptoms ?? [];
+
+      if (symptom === NO_ACCOMPANYING) {
+        return { ...previous, accompanyingSymptoms: current.includes(symptom) ? [] : [symptom] };
+      }
+
+      const withoutNone = current.filter((item) => item !== NO_ACCOMPANYING);
+      const next = withoutNone.includes(symptom)
+        ? withoutNone.filter((item) => item !== symptom)
+        : [...withoutNone, symptom];
+
+      return { ...previous, accompanyingSymptoms: next };
+    });
+  };
+
+  const addCustomAccompanying = () => {
+    const value = accompanyingInput.trim();
+    if (!value) return;
+
+    setFormData((previous) => {
+      const current = (previous.accompanyingSymptoms ?? []).filter(
+        (item) => item !== NO_ACCOMPANYING
+      );
+      return {
+        ...previous,
+        accompanyingSymptoms: current.includes(value) ? current : [...current, value],
+      };
+    });
+    setAccompanyingInput('');
+  };
+
+  const handleNext = () => {
+    setErrorMessage(null);
+
+    if (stepIndex === 0) {
+      const value = symptomInput.trim();
+      if (!value) {
+        setErrorMessage('Tuliskan atau pilih keluhan utama terlebih dahulu.');
+        return;
+      }
+      updateForm({ mainSymptom: value });
+    }
+
+    if (stepIndex === 1 && !formData.duration) {
+      setErrorMessage('Pilih perkiraan durasi gejalanya.');
       return;
     }
 
-    // Update state form data
-    const updatedForm = { ...formData };
-    if (step.step === 1) {
-      updatedForm.mainSymptom = value || formData.mainSymptom;
-    } else if (step.step === 2) {
-      updatedForm.duration = value || formData.duration;
-    } else if (step.step === 3) {
-      if (value.toLowerCase().includes('ringan')) updatedForm.severity = 'ringan';
-      else if (value.toLowerCase().includes('berat')) updatedForm.severity = 'berat';
-      else updatedForm.severity = 'sedang';
-    } else if (step.step === 4) {
-      if (value && value !== 'Tidak ada keluhan lain') {
-        updatedForm.accompanyingSymptoms = [value];
-      }
+    if (stepIndex === 3) {
+      const custom = accompanyingInput.trim();
+      if (custom) addCustomAccompanying();
     }
 
-    setFormData(updatedForm);
-    setTextInput('');
-
-    // Jika belum di step terakhir, maju ke step berikutnya
-    if (currentStepIndex < STEPS.length - 1) {
-      setCurrentStepIndex(currentStepIndex + 1);
-    } else {
-      // Step terakhir selesai -> Submit ke API Triage
-      await submitTriage(updatedForm);
+    if (stepIndex === TOTAL_STEPS - 1) {
+      setStage('review');
+      return;
     }
+
+    setStepIndex((index) => index + 1);
   };
 
   const handleBack = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1);
-      setErrorMessage(null);
+    setErrorMessage(null);
+    if (stepIndex === 0) {
+      setStage('intro');
+      return;
     }
+    setStepIndex((index) => index - 1);
   };
 
-  const submitTriage = async (payload: SymptomPayload) => {
+  const editStep = (index: number) => {
+    setStepIndex(index);
+    setStage('questions');
+    if (index === 0) setSymptomInput(formData.mainSymptom ?? '');
+  };
+
+  const submitTriage = async () => {
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
-      const res = await fetch('/api/triage', {
+      const response = await fetch('/api/triage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(formData),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
+      const json = await response.json();
+      if (!response.ok || !json.success) {
         throw new Error(json.error || 'Gagal memproses data gejala');
       }
 
-      setResult(json.data);
+      setResult(json.data as TriageResult);
 
-      // Simpan ke riwayat sesi pengguna untuk ditampilkan di Dashboard (mendukung Mode Tamu)
       try {
-        const cacheKey = `tenangcek_sessions_${user?.id || 'guest'}`;
-        const existing = JSON.parse(localStorage.getItem(cacheKey) || '[]');
-        const newHistoryItem = {
+        const session: SessionHistoryItem = {
           id: `session-${Date.now()}`,
-          symptomName: payload.mainSymptom,
-          duration: payload.duration || 'Beberapa saat',
+          symptomName: formData.mainSymptom,
+          duration: formData.duration || 'Beberapa saat',
           urgencyLevel: json.data.urgencyLevel,
           reasoning: json.data.reasoning,
           createdAt: new Date().toISOString(),
           doctorSummary: json.data.doctorSummary,
         };
-        localStorage.setItem(cacheKey, JSON.stringify([newHistoryItem, ...existing]));
-      } catch (err) {
-        console.warn('Gagal menyimpan sesi ke riwayat lokal:', err);
+        const existing = readSessions<SessionHistoryItem>(user?.id);
+        saveSessions(user?.id, [session, ...existing]);
+      } catch (storageError) {
+        console.warn('Gagal menyimpan sesi ke riwayat lokal:', storageError);
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Terjadi gangguan jaringan';
-      setErrorMessage(msg);
+    } catch (error: unknown) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Terjadi gangguan jaringan. Coba lagi.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -174,193 +250,530 @@ export default function StepChat() {
 
   const handleReset = () => {
     setResult(null);
-    setCurrentStepIndex(0);
-    setFormData({
-      mainSymptom: '',
-      duration: '',
-      severity: 'sedang',
-      accompanyingSymptoms: [],
-      anxietyBefore: 3,
-    });
-    setTextInput('');
+    setStage('intro');
+    setStepIndex(0);
+    setFormData(INITIAL_FORM);
+    setSymptomInput('');
+    setAccompanyingInput('');
+    setErrorMessage(null);
   };
 
-  // Jika hasil triase sudah siap, langsung tampilkan Ruang Chat Interaktif Full-Layout
   if (result) {
     return (
-      <div className="h-full w-full overflow-hidden">
-        <InteractiveAiChat
-          result={result}
-          formData={formData}
-          onReset={handleReset}
-        />
+      <div className="h-dvh w-full overflow-hidden">
+        <InteractiveAiChat result={result} formData={formData} onReset={handleReset} />
       </div>
     );
   }
 
-  // Tampilan Onboarding Triase Bertahap (Step 1 s/d 5)
+  const progress = stage === 'review' ? 100 : ((stepIndex + 1) / TOTAL_STEPS) * 100;
+
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
-      {/* Mini Navbar untuk halaman onboarding */}
-      <header className="sticky top-0 z-40 w-full border-b border-emerald-100 bg-white/90 backdrop-blur-md shrink-0">
-        <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-          <Link href="/dashboard" className="flex items-center gap-2 transition hover:opacity-80">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
-              <HeartPulse className="h-4 w-4" />
-            </div>
-            <span className="font-bold text-slate-800 text-sm">Tenang<span className="text-emerald-600">Cek</span></span>
+    <div className="flex min-h-dvh flex-col bg-[#f6f8f4]">
+      <header className="sticky top-0 z-40 shrink-0 border-b border-emerald-950/10 bg-[#fbfcf8]/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
+          <Link href="/" aria-label="Medivue beranda">
+            <Logo size="sm" />
           </Link>
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 transition"
-          >
-            <LayoutDashboard className="h-4 w-4 text-emerald-600" />
-            Dashboard
-          </Link>
+          <div className="flex items-center gap-3">
+            <a
+              href="tel:119"
+              className="hidden items-center gap-1.5 text-xs font-semibold text-rose-700 transition hover:text-rose-800 sm:flex"
+            >
+              <PhoneCall className="h-3.5 w-3.5" />
+              Darurat: 119
+            </a>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-950/10 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:text-emerald-900"
+            >
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Dashboard
+            </Link>
+          </div>
         </div>
       </header>
 
-      <div className="flex-1 flex items-start justify-center px-4 py-8">
-      <div className="w-full max-w-2xl space-y-6">
-      {/* Header Pengantar Gejala */}
-      <div className="text-center">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 mb-2">
-          <HeartPulse className="h-3.5 w-3.5 text-emerald-600" />
-          <span>Symptom Check-in Awal</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800">
-          Cek Keluhan Kesehatan Anda
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
-          Jawab pertanyaan sederhana satu per satu. Sistem akan menilai tingkat urgensi dan langsung menghubungkan Anda ke ruang konsultasi AI.
-        </p>
-      </div>
+      {stage === 'intro' && (
+        <div className="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 sm:py-16">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-emerald-900">
+            <ArrowLeft className="h-4 w-4" /> Kembali ke beranda
+          </Link>
 
-      <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm">
-          {/* Progress bar */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
-              <span className="text-emerald-700 font-bold">Langkah {step.step} dari {STEPS.length}: {step.title}</span>
-              <span>{Math.round(((step.step) / STEPS.length) * 100)}%</span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full bg-emerald-600 transition-all duration-300 ease-out"
-                style={{ width: `${(step.step / STEPS.length) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Pertanyaan Chat */}
-          <div className="space-y-2 mb-6">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-              <span>TenangCek Guide</span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-800">
-              {step.question}
-            </h2>
-            <p className="text-xs text-slate-500">{step.helper}</p>
-          </div>
-
-          {/* Opsi Cepat (Quick Chips) */}
-          {step.quickChips.length > 0 && (
-            <div className="mb-6">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                Pilihan Cepat:
+          <div className="mt-8 grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-900">
+                <HeartPulse className="h-3.5 w-3.5" />
+                Cek gejala · sekitar 2 menit
               </span>
-              <div className="flex flex-wrap gap-2">
-                {step.quickChips.map((chip, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleNext(chip)}
-                    className="rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs font-medium text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 transition shadow-2xs"
-                  >
-                    {chip}
-                  </button>
+              <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-[1.08] tracking-[-.045em] text-emerald-950 sm:text-5xl">
+                Sebelum mulai, tarik napas sebentar.
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
+                Kami akan menanyakan lima hal sederhana tentang keluhanmu. Tidak ada jawaban yang
+                salah — jawab sejujur yang kamu bisa.
+              </p>
+
+              <ul className="mt-6 space-y-3">
+                {[
+                  'Pertanyaan bertahap, bisa kembali kapan saja',
+                  'Tanda bahaya diperiksa lebih dulu',
+                  'Kamu tetap yang menentukan langkah berikutnya',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-slate-700">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={startQuestions}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-950/10 transition hover:bg-emerald-800"
+                >
+                  Mulai cek gejala <ArrowRight className="h-4 w-4" />
+                </button>
+                <Link
+                  href="/#cara-kerja"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-emerald-950/15 bg-white px-5 py-3 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-50"
+                >
+                  Lihat cara kerjanya
+                </Link>
+              </div>
+
+              <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                Bisa dimulai tanpa akun. Riwayat tersimpan di browser perangkat ini.
+              </p>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-emerald-950/10 bg-white p-6 shadow-[0_24px_80px_-40px_rgba(6,78,59,.35)]">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">Setelah selesai</p>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-100 text-emerald-800">
+                  <ClipboardList className="h-4 w-4" />
+                </span>
+              </div>
+              <h2 className="mt-3 text-xl font-semibold tracking-tight text-emerald-950">
+                Kamu akan mendapat tiga hal
+              </h2>
+
+              <div className="mt-5 space-y-3">
+                {[
+                  { icon: Sparkles, title: 'Tingkat urgensi', text: 'Darurat, segera, terjadwal, atau pantau di rumah.' },
+                  { icon: CheckCircle2, title: 'Langkah awal', text: 'Saran praktis dan tanda yang perlu diwaspadai.' },
+                  { icon: ClipboardList, title: 'Ringkasan dokter', text: 'Catatan siap dibawa saat konsultasi.' },
+                ].map(({ icon: Icon, title, text }) => (
+                  <div key={title} className="flex items-start gap-3 rounded-2xl bg-[#f6f8f4] p-4">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-950">{title}</p>
+                      <p className="mt-0.5 text-xs leading-5 text-slate-600">{text}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
 
-          {/* Input Anxiety Slider untuk Step 5 */}
-          {step.type === 'anxiety' && (
-            <div className="mb-6">
-              <AnxietySlider
-                value={formData.anxietyBefore ?? 3}
-                onChange={(val) => setFormData({ ...formData, anxietyBefore: val })}
-              />
-            </div>
-          )}
+              <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-teal-100 bg-teal-50/70 p-3 text-[11px] leading-5 text-teal-900">
+                <Wind className="mt-0.5 h-4 w-4 shrink-0" />
+                Ada latihan napas singkat kalau kamu butuh jeda.
+              </div>
 
-          {/* Input Teks Bebas jika tipe teks */}
-          {step.type === 'text' && (
-            <div className="relative mb-6">
-              <input
-                type="text"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleNext();
-                }}
-                placeholder="Atau ketik keluhan Anda di sini..."
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition"
-              />
+              <p className="mt-4 border-t border-slate-100 pt-3 text-[11px] leading-5 text-slate-500">
+                Hasil Medivue adalah panduan awal, bukan diagnosis. Untuk kondisi darurat, segera ke
+                IGD atau hubungi 119.
+              </p>
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* Error Banner */}
-          {errorMessage && (
-            <div className="mb-4 flex items-center gap-2 rounded-xl bg-rose-50 p-3 text-xs text-rose-700 border border-rose-200">
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-              <span>{errorMessage}</span>
+      {stage === 'questions' && (
+        <div className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 sm:px-8 sm:py-10">
+          <div className="grid gap-8 lg:grid-cols-[.34fr_.66fr]">
+            <aside className="hidden lg:block">
+              <button
+                type="button"
+                onClick={() => setStage('intro')}
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
+              >
+                <ArrowLeft className="h-4 w-4" /> Kembali
+              </button>
+
+              <div className="mt-6 rounded-2xl border border-emerald-950/10 bg-white p-5">
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">Progres check-in</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Langkah {stepIndex + 1} dari {TOTAL_STEPS}
+                </p>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-full rounded-full bg-emerald-700 transition-all duration-300" style={{ width: `${progress}%` }} />
+                </div>
+
+                <ol className="mt-5 space-y-1">
+                  {STEP_META.map((step, index) => {
+                    const isDone = index < stepIndex;
+                    const isActive = index === stepIndex;
+                    return (
+                      <li key={step.title}>
+                        <button
+                          type="button"
+                          onClick={() => goToStep(index)}
+                          disabled={index > stepIndex}
+                          className={`flex w-full items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition ${
+                            isActive ? 'bg-emerald-50' : isDone ? 'hover:bg-slate-50' : 'opacity-60'
+                          }`}
+                        >
+                          <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                            isDone
+                              ? 'bg-emerald-700 text-white'
+                              : isActive
+                                ? 'bg-emerald-900 text-white'
+                                : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            {isDone ? <Check className="h-3 w-3" /> : index + 1}
+                          </span>
+                          <span>
+                            <span className={`block text-xs font-semibold ${isActive ? 'text-emerald-900' : 'text-slate-700'}`}>
+                              {step.title}
+                            </span>
+                            <span className="mt-0.5 block text-[11px] leading-4 text-slate-500">{step.helper}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-amber-200/70 bg-[#fff8e8] p-4">
+                <p className="text-xs font-semibold text-amber-950">Gejala terasa darurat?</p>
+                <p className="mt-1 text-[11px] leading-5 text-amber-900/80">
+                  Jangan menunggu hasil aplikasi. Segera cari bantuan medis.
+                </p>
+                <a href="tel:119" className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 hover:underline">
+                  <PhoneCall className="h-3.5 w-3.5" /> Hubungi 119
+                </a>
+              </div>
+            </aside>
+
+            <main>
+              <div className="mb-4 flex items-center justify-between lg:hidden">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Kembali
+                </button>
+                <span className="text-xs font-semibold text-emerald-800">
+                  {stepIndex + 1} / {TOTAL_STEPS}
+                </span>
+              </div>
+
+              <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-slate-200/70 lg:hidden">
+                <div className="h-full rounded-full bg-emerald-700 transition-all duration-300" style={{ width: `${progress}%` }} />
+              </div>
+
+              <div className="rounded-[1.75rem] border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                    <Sparkles className="h-3 w-3" />
+                    Langkah {stepIndex + 1}
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-400">{STEP_META[stepIndex].title}</span>
+                </div>
+
+                <h1 className="mt-4 text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+                  {stepIndex === 0 && 'Apa yang paling kamu rasakan sekarang?'}
+                  {stepIndex === 1 && 'Sudah berapa lama gejala ini berlangsung?'}
+                  {stepIndex === 2 && 'Seberapa besar gejala mengganggu aktivitasmu?'}
+                  {stepIndex === 3 && 'Ada gejala lain yang menyertai?'}
+                  {stepIndex === 4 && 'Seberapa cemas kamu tentang kondisi ini?'}
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {stepIndex === 0 && 'Ceritakan dengan bahasamu sendiri, atau pilih salah satu pilihan cepat.'}
+                  {stepIndex === 1 && 'Perkiraan saja sudah cukup. Ini membantu menentukan seberapa cepat langkah yang dibutuhkan.'}
+                  {stepIndex === 2 && 'Pilih yang paling menggambarkan kondisimu saat ini, bukan yang paling buruk.'}
+                  {stepIndex === 3 && 'Pilih semua yang terasa. Kalau tidak ada, pilih “Tidak ada keluhan lain”.'}
+                  {stepIndex === 4 && 'Tidak ada jawaban benar atau salah. Kami memakai ini untuk menyesuaikan nada dan saran.'}
+                </p>
+
+                <div className="mt-6">
+                  {stepIndex === 0 && (
+                    <div className="space-y-4">
+                      <input
+                        type="text"
+                        value={symptomInput}
+                        onChange={(event) => setSymptomInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') handleNext();
+                        }}
+                        placeholder="Contoh: sakit kepala sejak semalam"
+                        autoFocus
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      />
+                      <div>
+                        <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Pilihan cepat</p>
+                        <div className="flex flex-wrap gap-2">
+                          {SYMPTOM_CHIPS.map((chip) => (
+                            <button
+                              key={chip}
+                              type="button"
+                              onClick={() => setSymptomInput(chip)}
+                              className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
+                                symptomInput === chip
+                                  ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                                  : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {chip}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {stepIndex === 1 && (
+                    <div className="grid gap-2.5 sm:grid-cols-2">
+                      {DURATION_OPTIONS.map((option) => {
+                        const selected = formData.duration === option;
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => updateForm({ duration: option })}
+                            className={`flex items-center justify-between rounded-xl border px-4 py-3.5 text-sm font-medium transition ${
+                              selected
+                                ? 'border-emerald-400 bg-emerald-50 text-emerald-950'
+                                : 'border-slate-200 bg-slate-50/60 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50/60'
+                            }`}
+                          >
+                            {option}
+                            <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${selected ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-transparent'}`}>
+                              <Check className="h-3 w-3" />
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {stepIndex === 2 && (
+                    <div className="space-y-2.5">
+                      {SEVERITY_OPTIONS.map((option) => {
+                        const selected = (formData.severity ?? 'sedang') === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => updateForm({ severity: option.value })}
+                            className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition ${
+                              selected ? option.tone : 'border-slate-200 bg-slate-50/60 hover:border-emerald-200 hover:bg-emerald-50/40'
+                            }`}
+                          >
+                            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-transparent'}`}>
+                              <Check className="h-3 w-3" />
+                            </span>
+                            <span>
+                              <span className="block text-sm font-semibold">{option.label}</span>
+                              <span className="mt-0.5 block text-xs leading-5 opacity-80">{option.description}</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {stepIndex === 3 && (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        {ACCOMPANYING_OPTIONS.map((option) => {
+                          const selected = (formData.accompanyingSymptoms ?? []).includes(option);
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              onClick={() => toggleAccompanying(option)}
+                              className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
+                                selected
+                                  ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                                  : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={accompanyingInput}
+                          onChange={(event) => setAccompanyingInput(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault();
+                              addCustomAccompanying();
+                            }
+                          }}
+                          placeholder="Gejala lain (opsional)"
+                          className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                        />
+                        <button
+                          type="button"
+                          onClick={addCustomAccompanying}
+                          disabled={!accompanyingInput.trim()}
+                          className="shrink-0 rounded-xl border border-emerald-950/10 bg-white px-4 py-2.5 text-xs font-semibold text-emerald-900 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Tambah
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {stepIndex === 4 && (
+                    <div>
+                      <AnxietySlider
+                        value={formData.anxietyBefore ?? 3}
+                        onChange={(value) => updateForm({ anxietyBefore: value })}
+                      />
+                      <p className="mt-3 text-center text-xs text-slate-500">
+                        Kamu memilih: <span className="font-semibold text-emerald-900">{ANXIETY_LABELS[(formData.anxietyBefore ?? 3) - 1]}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {errorMessage && (
+                  <div role="alert" className="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                    <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white">!</span>
+                    {errorMessage}
+                  </div>
+                )}
+
+                <div className="mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Kembali
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+                  >
+                    {stepIndex === TOTAL_STEPS - 1 ? 'Tinjau jawaban' : 'Lanjut'}
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      )}
+
+      {stage === 'review' && (
+        <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8 sm:px-8 sm:py-12">
+          <button
+            type="button"
+            onClick={() => editStep(TOTAL_STEPS - 1)}
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
+          >
+            <ArrowLeft className="h-4 w-4" /> Ubah jawaban
+          </button>
+
+          <div className="mt-6 rounded-[1.75rem] border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+              <ClipboardList className="h-3.5 w-3.5" />
+              Tinjau jawaban
+            </span>
+            <h1 className="mt-3 text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+              Sebentar lagi selesai.
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Periksa kembali jawabanmu. Kamu masih bisa mengubahnya sebelum analisis dimulai.
+            </p>
+
+            <div className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
+              {[
+                { label: 'Keluhan utama', value: formData.mainSymptom || '—', step: 0 },
+                { label: 'Durasi', value: formData.duration || '—', step: 1 },
+                { label: 'Keparahan', value: SEVERITY_OPTIONS.find((option) => option.value === (formData.severity ?? 'sedang'))?.label ?? '—', step: 2 },
+                {
+                  label: 'Gejala penyerta',
+                  value: formData.accompanyingSymptoms?.length ? formData.accompanyingSymptoms.join(', ') : 'Tidak ada',
+                  step: 3,
+                },
+                {
+                  label: 'Tingkat kecemasan',
+                  value: `${formData.anxietyBefore ?? 3}/5 · ${ANXIETY_LABELS[(formData.anxietyBefore ?? 3) - 1]}`,
+                  step: 4,
+                },
+              ].map((row) => (
+                <div key={row.label} className="flex items-start justify-between gap-4 px-4 py-3.5">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{row.label}</p>
+                    <p className="mt-1 text-sm font-medium text-slate-800">{row.value}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => editStep(row.step)}
+                    className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-50"
+                  >
+                    Ubah
+                  </button>
+                </div>
+              ))}
             </div>
-          )}
 
-          {/* Action Navigation Buttons */}
-          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+            {errorMessage && (
+              <div role="alert" className="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white">!</span>
+                {errorMessage}
+              </div>
+            )}
+
+            <div className="mt-6 rounded-xl border border-amber-200/70 bg-[#fff8e8] p-3.5 text-[11px] leading-5 text-amber-950">
+              <strong>Ingat:</strong> hasil Medivue adalah panduan awal, bukan diagnosis. Jika gejalanya
+              terasa berat atau darurat, segera ke IGD atau hubungi 119.
+            </div>
+
             <button
               type="button"
-              onClick={handleBack}
-              disabled={currentStepIndex === 0 || isLoading}
-              className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-medium ${
-                currentStepIndex === 0
-                  ? 'text-slate-300 cursor-not-allowed'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Kembali
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleNext()}
+              onClick={submitTriage}
               disabled={isLoading}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 disabled:opacity-50 transition"
+              className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-950/10 transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Menganalisis Triage...
-                </>
-              ) : currentStepIndex === STEPS.length - 1 ? (
-                <>
-                  <span>Lihat Panduan Triage</span>
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Menganalisis keluhan...
                 </>
               ) : (
                 <>
-                  <span>Lanjut</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <Sparkles className="h-4 w-4 text-lime-200" />
+                  Analisis sekarang
                 </>
               )}
             </button>
+            <p className="mt-3 text-center text-[11px] text-slate-500">
+              Proses ini memeriksa tanda bahaya terlebih dahulu, lalu menyusun langkah awal.
+            </p>
           </div>
         </div>
-      </div>
-      </div>
+      )}
     </div>
-    );
-  }
+  );
+}

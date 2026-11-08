@@ -1,5 +1,5 @@
 /**
- * Definisi Tipe Data Triage TenangCek
+ * Definisi Tipe Data Triage Medivue
  * Berdasarkan Konsep Desain Feedback & Arsitektur IMK (Halaman 3-5)
  */
 

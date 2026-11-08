@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Smile, Meh, Frown, AlertCircle } from 'lucide-react';
 
 interface Props {
   value: number;
@@ -10,48 +9,55 @@ interface Props {
   sublabel?: string;
 }
 
+const LEVELS = [
+  { num: 1, label: 'Sangat tenang', icon: '😌', color: 'text-emerald-700' },
+  { num: 2, label: 'Sedikit khawatir', icon: '🙂', color: 'text-teal-700' },
+  { num: 3, label: 'Cukup cemas', icon: '😐', color: 'text-amber-700' },
+  { num: 4, label: 'Cemas tinggi', icon: '😟', color: 'text-orange-700' },
+  { num: 5, label: 'Sangat panik', icon: '😰', color: 'text-rose-700' },
+];
+
 export default function AnxietySlider({ value, onChange, label, sublabel }: Props) {
-  const levels = [
-    { num: 1, label: 'Sangat Tenang', icon: '😌', color: 'text-emerald-600' },
-    { num: 2, label: 'Sedikit Khawatir', icon: '🙂', color: 'text-teal-600' },
-    { num: 3, label: 'Cukup Cemas', icon: '😐', color: 'text-amber-600' },
-    { num: 4, label: 'Cemas Tinggi', icon: '😟', color: 'text-orange-600' },
-    { num: 5, label: 'Sangat Panik', icon: '😰', color: 'text-rose-600' },
-  ];
-
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-      <div className="text-center mb-4">
-        <h4 className="text-sm font-bold text-slate-800">
-          {label || 'Seberapa cemas Anda mengenai gejala ini saat ini?'}
-        </h4>
-        <p className="text-xs text-slate-500 mt-1">
-          {sublabel || 'Skala 1 (Sangat Tenang) hingga 5 (Sangat Panik)'}
-        </p>
-      </div>
+    <div>
+      {label && (
+        <label className="block text-sm font-semibold text-emerald-950">{label}</label>
+      )}
+      {sublabel && (
+        <p className="mt-1 text-xs leading-5 text-slate-500">{sublabel}</p>
+      )}
 
-      <div className="grid grid-cols-5 gap-2">
-        {levels.map((item) => {
+      <div className="mt-2 grid grid-cols-5 gap-1.5 sm:gap-2">
+        {LEVELS.map((item) => {
           const isSelected = value === item.num;
           return (
             <button
               key={item.num}
               type="button"
               onClick={() => onChange(item.num)}
-              className={`flex flex-col items-center justify-center rounded-xl p-3 transition-all ${
+              aria-pressed={isSelected}
+              aria-label={`Tingkat kecemasan ${item.num}: ${item.label}`}
+              className={`flex flex-col items-center justify-center rounded-xl border px-1 py-3 transition ${
                 isSelected
-                  ? 'border-2 border-emerald-500 bg-emerald-50 text-emerald-900 shadow-xs'
-                  : 'border border-slate-100 bg-slate-50/70 hover:bg-slate-100 text-slate-600'
+                  ? 'border-emerald-500 bg-emerald-50 text-emerald-950 shadow-sm'
+                  : 'border-slate-200 bg-slate-50/70 text-slate-600 hover:border-emerald-200 hover:bg-emerald-50/40'
               }`}
             >
-              <span className="text-2xl mb-1">{item.icon}</span>
-              <span className="text-xs font-bold">{item.num}</span>
-              <span className="text-[10px] text-center hidden sm:inline leading-tight mt-0.5">
+              <span className="text-2xl">{item.icon}</span>
+              <span className={`mt-1 text-sm font-bold ${isSelected ? 'text-emerald-900' : item.color}`}>
+                {item.num}
+              </span>
+              <span className="mt-0.5 hidden text-center text-[10px] leading-tight text-slate-500 sm:block">
                 {item.label}
               </span>
             </button>
           );
         })}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+        <span>Tenang</span>
+        <span>Panik</span>
       </div>
     </div>
   );

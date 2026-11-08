@@ -48,7 +48,7 @@ export function validateAndEnforceSafety(
 
   // 4. Pastikan selalu ada catatan disclaimer medis
   result.confidenceNotes =
-    'TenangCek adalah alat bantu triase informasi awal dan TIDAK menggantikan diagnosis medis resmi dari dokter.';
+    'Medivue adalah alat bantu triase informasi awal dan TIDAK menggantikan diagnosis medis resmi dari dokter.';
 
   return result;
 }
