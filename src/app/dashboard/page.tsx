@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +22,7 @@ import {
   FileCheck2,
   FileText,
   HeartPulse,
-  LogOut,
+  Info,
   Wind,
 } from 'lucide-react';
 
@@ -32,8 +32,53 @@ function formatDate(value: string) {
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+/** Kartu kategori dengan anatomi seragam: ikon, label, nilai, lalu satu aksi. */
+function CategoryCard({
+  icon,
+  label,
+  value,
+  helper,
+  href,
+  actionLabel,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  helper: string;
+  href: string;
+  actionLabel: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex h-full flex-col rounded-2xl border border-emerald-950/10 bg-white p-5 transition hover:border-emerald-800/20 hover:shadow-sm sm:p-6"
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime-100 text-emerald-800">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[.12em] text-slate-500">{label}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-emerald-950">{value}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{helper}</p>
+        </div>
+      </div>
+
+      <div className="mt-auto pt-5">
+        <span className="flex items-center gap-1.5 border-t border-slate-100 pt-4 text-sm font-semibold text-emerald-800 transition-colors group-hover:text-emerald-900">
+          {actionLabel}
+          <ArrowRight
+            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export default function DashboardPage() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [showBreathing, setShowBreathing] = useState(false);
   const [sessions, setSessions] = useState<SessionHistoryItem[]>([]);
   const [savedLetters, setSavedLetters] = useState<DoctorLetterData[]>([]);
@@ -45,6 +90,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     try {
+      // localStorage adalah external store yang baru tersedia setelah mount;
+      // sinkronisasi lewat effect memang diperlukan di sini.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessions(readSessions<SessionHistoryItem>(user?.id));
       setSavedLetters(readLetters<DoctorLetterData>());
     } catch (error) {
@@ -70,32 +118,21 @@ export default function DashboardPage() {
   return (
     <AuthGuard>
       <div className="min-h-[70vh] bg-[#f6f8f4]">
-        <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 sm:px-8 sm:py-12">
-          <header className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[.16em] text-emerald-700">
-                Ruang pribadimu
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-emerald-950 sm:text-4xl">
-                Selamat {greeting}, {displayName}.
-              </h1>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
-                Mulai pengecekan baru, pantau yang sudah kamu rasakan, atau siapkan catatan sebelum
-                bertemu dokter.
-              </p>
-            </div>
-            {user && (
-              <button
-                type="button"
-                onClick={() => signOut()}
-                className="inline-flex items-center gap-2 rounded-xl border border-emerald-950/10 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-emerald-800/20 hover:text-emerald-900"
-              >
-                <LogOut className="h-4 w-4" /> Keluar
-              </button>
-            )}
+        <div className="mx-auto max-w-6xl space-y-6 px-5 py-8 sm:space-y-8 sm:px-8 sm:py-12">
+          <header className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-emerald-700">
+              Ruang pribadimu
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-emerald-950 sm:text-4xl">
+              Selamat {greeting}, {displayName}.
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Mulai pengecekan baru, pantau yang sudah kamu rasakan, atau siapkan catatan sebelum
+              bertemu dokter.
+            </p>
           </header>
 
-          {/* Hero aksi */}
+          {/* Hero aksi utama */}
           <section className="relative overflow-hidden rounded-[1.75rem] bg-emerald-950 p-6 text-white sm:p-9">
             <div className="pointer-events-none absolute -right-10 -top-24 h-72 w-72 rounded-full border border-white/10" />
             <div className="pointer-events-none absolute -right-2 -top-16 h-56 w-56 rounded-full border border-white/10" />
@@ -116,63 +153,75 @@ export default function DashboardPage() {
                   href="/checkin"
                   className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-lime-300 px-4 py-2.5 text-sm font-bold text-emerald-950 transition hover:bg-lime-200"
                 >
-                  Cek gejala baru <ArrowRight className="h-4 w-4" />
+                  Cek gejala baru <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
               <div className="hidden h-28 w-28 items-center justify-center rounded-[2rem] bg-white/10 text-lime-200 md:flex">
-                <HeartPulse className="h-14 w-14" strokeWidth={1.4} />
+                <HeartPulse className="h-14 w-14" strokeWidth={1.4} aria-hidden="true" />
               </div>
             </div>
           </section>
 
-          {/* Ringkasan */}
-          <section aria-label="Ringkasan aktivitas" className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-emerald-950/10 bg-white p-5">
-              <p className="text-xs font-medium text-slate-500">Total cek gejala</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-emerald-950">
-                {sessions.length}
+          {/* Kategori dengan aksi seragam */}
+          <section aria-labelledby="ringkasan-heading" className="space-y-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">
+                Ringkasan
               </p>
-              <p className="mt-1 text-xs text-slate-500">riwayat di browser ini</p>
+              <h2
+                id="ringkasan-heading"
+                className="mt-1 text-xl font-semibold tracking-tight text-emerald-950"
+              >
+                Aksimu hari ini
+              </h2>
             </div>
-            <div className="rounded-2xl border border-emerald-950/10 bg-white p-5">
-              <p className="text-xs font-medium text-slate-500">Catatan untuk dokter</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-emerald-950">
-                {savedLetters.length}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">ringkasan yang tersimpan</p>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <CategoryCard
+                icon={<HeartPulse className="h-5 w-5" aria-hidden="true" />}
+                label="Riwayat cek"
+                value={`${sessions.length}`}
+                helper={sessions.length > 0 ? 'pengecekan tersimpan' : 'belum ada pengecekan'}
+                href="#pengecekan-terakhir"
+                actionLabel="Lihat riwayat"
+              />
+              <CategoryCard
+                icon={<FileCheck2 className="h-5 w-5" aria-hidden="true" />}
+                label="Catatan dokter"
+                value={`${savedLetters.length}`}
+                helper={
+                  savedLetters.length > 0 ? 'catatan untuk konsultasi' : 'belum ada catatan tersimpan'
+                }
+                href={savedLetters.length > 0 ? '#catatan' : '/checkin'}
+                actionLabel={savedLetters.length > 0 ? 'Lihat catatan' : 'Buat catatan'}
+              />
+              <CategoryCard
+                icon={<BookHeart className="h-5 w-5" aria-hidden="true" />}
+                label="Symptom diary"
+                value="Harian"
+                helper="catat perubahan yang kamu rasakan"
+                href="/diary"
+                actionLabel="Buka diary"
+              />
             </div>
-            <Link
-              href="/diary"
-              className="group flex items-center justify-between rounded-2xl border border-emerald-950/10 bg-white p-5 transition hover:border-emerald-800/30 hover:shadow-sm"
-            >
-              <div>
-                <p className="text-xs font-medium text-slate-500">Pantau perkembangannya</p>
-                <p className="mt-2 text-lg font-semibold text-emerald-950">Buka symptom diary</p>
-                <p className="mt-1 text-xs text-slate-500">Catat perubahan harianmu</p>
-              </div>
-              <BookHeart className="h-6 w-6 text-emerald-700 transition group-hover:scale-110" />
-            </Link>
           </section>
 
           <div className="grid gap-8 lg:grid-cols-[1.35fr_.8fr]">
-            <section className="space-y-4">
-              <div className="flex items-end justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">
-                    Jejak kesehatan
-                  </p>
-                  <h2 className="mt-1 text-xl font-semibold tracking-tight text-emerald-950">
-                    Pengecekan terakhir
-                  </h2>
-                </div>
-                {sessions.length > 0 && (
-                  <Link
-                    href="/checkin"
-                    className="text-sm font-semibold text-emerald-800 hover:underline"
-                  >
-                    Cek lagi
-                  </Link>
-                )}
+            <section
+              id="pengecekan-terakhir"
+              aria-labelledby="pengecekan-terakhir-heading"
+              className="scroll-mt-24 space-y-4"
+            >
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">
+                  Jejak kesehatan
+                </p>
+                <h2
+                  id="pengecekan-terakhir-heading"
+                  className="mt-1 text-xl font-semibold tracking-tight text-emerald-950"
+                >
+                  Pengecekan terakhir
+                </h2>
               </div>
 
               {recentSession && recentMeta ? (
@@ -192,10 +241,12 @@ export default function DashboardPage() {
                       {recentMeta.shortLabel}
                     </span>
                   </div>
+
                   <p className="mt-4 text-sm leading-6 text-slate-600">{recentSession.reasoning}</p>
+
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
                     <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-                      <Calendar className="h-3.5 w-3.5" />
+                      <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
                       {formatDate(recentSession.createdAt)}
                     </span>
                     {recentSession.doctorSummary && (
@@ -207,9 +258,9 @@ export default function DashboardPage() {
                             urgencyLabel: recentMeta.label,
                           })
                         }
-                        className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-950/10 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-900 transition hover:border-emerald-800/20 hover:bg-emerald-50"
                       >
-                        <FileText className="h-4 w-4 text-emerald-700" /> Buka ringkasan
+                        <FileText className="h-4 w-4" aria-hidden="true" /> Buka ringkasan
                       </button>
                     )}
                   </div>
@@ -217,7 +268,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="rounded-2xl border border-dashed border-emerald-950/20 bg-white px-6 py-10 text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-lime-100 text-emerald-800">
-                    <HeartPulse className="h-6 w-6" />
+                    <HeartPulse className="h-6 w-6" aria-hidden="true" />
                   </div>
                   <h3 className="mt-4 font-semibold text-emerald-950">
                     Belum ada riwayat pengecekan
@@ -227,15 +278,15 @@ export default function DashboardPage() {
                   </p>
                   <Link
                     href="/checkin"
-                    className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-900"
+                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
                   >
-                    Mulai cek gejala <ArrowRight className="h-4 w-4" />
+                    Mulai cek gejala <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </div>
               )}
 
               {sessions.length > 1 && (
-                <div className="rounded-2xl border border-emerald-950/10 bg-white p-5">
+                <div className="rounded-2xl border border-emerald-950/10 bg-white p-5 sm:p-6">
                   <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">
                     Sebaran urgensi
                   </p>
@@ -258,10 +309,10 @@ export default function DashboardPage() {
             </section>
 
             <aside className="space-y-4">
-              <div className="rounded-2xl border border-emerald-950/10 bg-white p-5">
+              <div className="rounded-2xl border border-emerald-950/10 bg-white p-5 sm:p-6">
                 <div className="flex items-start gap-3">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime-100 text-emerald-800">
-                    <Wind className="h-5 w-5" />
+                    <Wind className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <div className="flex-1">
                     <h2 className="font-semibold text-emerald-950">Butuh jeda sebentar?</h2>
@@ -274,13 +325,13 @@ export default function DashboardPage() {
                   type="button"
                   aria-expanded={showBreathing}
                   onClick={() => setShowBreathing(!showBreathing)}
-                  className="mt-4 flex w-full items-center justify-between rounded-xl bg-[#f3f6ee] px-4 py-3 text-sm font-semibold text-emerald-900 transition hover:bg-lime-100"
+                  className="mt-4 flex min-h-11 w-full items-center justify-between rounded-xl bg-[#f3f6ee] px-4 py-3 text-sm font-semibold text-emerald-900 transition hover:bg-lime-100"
                 >
                   {showBreathing ? 'Tutup latihan' : 'Mulai latihan napas'}{' '}
                   {showBreathing ? (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4" aria-hidden="true" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   )}
                 </button>
                 {showBreathing && (
@@ -289,9 +340,10 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
-              <div className="rounded-2xl border border-emerald-950/10 bg-white p-5">
+
+              <div className="rounded-2xl border border-emerald-950/10 bg-white p-5 sm:p-6">
                 <div className="flex items-center gap-2">
-                  <Clock3 className="h-4 w-4 text-emerald-700" />
+                  <Clock3 className="h-4 w-4 text-emerald-700" aria-hidden="true" />
                   <h2 className="font-semibold text-emerald-950">Sedikit pengingat</h2>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -299,27 +351,36 @@ export default function DashboardPage() {
                   darurat, cari bantuan medis langsung.
                 </p>
                 <div className="mt-3 flex items-center gap-2 text-xs font-medium text-emerald-800">
-                  <Check className="h-4 w-4" /> Kamu tetap yang menentukan langkah selanjutnya.
+                  <Check className="h-4 w-4" aria-hidden="true" /> Kamu tetap yang menentukan langkah
+                  selanjutnya.
                 </div>
               </div>
             </aside>
           </div>
 
           {savedLetters.length > 0 && (
-            <section className="space-y-4">
+            <section
+              id="catatan"
+              aria-labelledby="catatan-heading"
+              className="scroll-mt-24 space-y-4"
+            >
               <div>
                 <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">
                   Tersimpan
                 </p>
-                <h2 className="mt-1 text-xl font-semibold tracking-tight text-emerald-950">
+                <h2
+                  id="catatan-heading"
+                  className="mt-1 text-xl font-semibold tracking-tight text-emerald-950"
+                >
                   Catatan untuk konsultasi
                 </h2>
               </div>
+
               <div className="grid gap-3 md:grid-cols-2">
                 {savedLetters.map((letter) => (
                   <article
                     key={letter.documentId}
-                    className="flex flex-col justify-between rounded-2xl border border-emerald-950/10 bg-white p-5"
+                    className="flex h-full flex-col justify-between rounded-2xl border border-emerald-950/10 bg-white p-5 transition hover:border-emerald-800/20 hover:shadow-sm sm:p-6"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-3">
@@ -337,16 +398,17 @@ export default function DashboardPage() {
                         {letter.clinicalSummary}
                       </p>
                     </div>
-                    <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
                       <span className="text-xs text-slate-500">
                         {formatDate(letter.generatedAt)}
                       </span>
                       <button
                         type="button"
                         onClick={() => setSelectedLetter(letter)}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-800 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-900"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
                       >
-                        <FileCheck2 className="h-3.5 w-3.5" /> Buka catatan
+                        <FileCheck2 className="h-4 w-4" aria-hidden="true" /> Buka catatan
                       </button>
                     </div>
                   </article>
@@ -355,12 +417,18 @@ export default function DashboardPage() {
             </section>
           )}
 
-          <p className="flex items-center gap-2 border-t border-emerald-950/10 pt-5 text-xs leading-5 text-slate-500">
-            <BookHeart className="h-4 w-4 shrink-0" /> Riwayat pengecekan tersimpan di browser
-            perangkat ini dan bisa hilang jika data browser dibersihkan.
-          </p>
+          <div className="flex items-start gap-3 rounded-2xl border border-emerald-950/10 bg-white/70 p-4 text-xs leading-5 text-slate-600">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-lime-100 text-emerald-800">
+              <Info className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <p>
+              Riwayat pengecekan tersimpan di browser perangkat ini dan bisa hilang jika data
+              browser dibersihkan.
+            </p>
+          </div>
         </div>
       </div>
+
       {selectedDoctorSummary && (
         <DoctorSummaryModal
           doctorSummary={selectedDoctorSummary.summary}

@@ -11,11 +11,36 @@ import {
   ArrowRight,
   CheckCircle2,
   HeartPulse,
+  Loader2,
   Lock,
   Mail,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
+
+/** Logo Google resmi (empat warna) untuk tombol OAuth. */
+function GoogleIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.9-1.75 2.98-4.33 2.98-7.38Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 22c2.7 0 4.96-.9 6.62-2.39l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.06v2.59A10 10 0 0 0 12 22Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M6.41 13.94a6 6 0 0 1 0-3.88V7.47H3.06a10 10 0 0 0 0 9.06l3.35-2.59Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.94c1.47 0 2.79.5 3.83 1.49l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.94 5.47l3.35 2.59C7.2 7.7 9.4 5.94 12 5.94Z"
+      />
+    </svg>
+  );
+}
 
 function AuthContent() {
   const [isLogin, setIsLogin] = useState(true);
@@ -24,11 +49,16 @@ function AuthContent() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/dashboard';
+  const rawRedirect = searchParams.get('redirect');
+  const redirectPath =
+    rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
+      ? rawRedirect
+      : '/dashboard';
 
   const switchMode = (nextIsLogin: boolean) => {
     setIsLogin(nextIsLogin);
@@ -46,8 +76,8 @@ function AuthContent() {
       return;
     }
 
-    if (password.length < 6) {
-      setErrorMsg('Kata sandi minimal 6 karakter.');
+    if (!isLogin && password.length < 8) {
+      setErrorMsg('Kata sandi minimal 8 karakter.');
       return;
     }
 
@@ -99,16 +129,29 @@ function AuthContent() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setIsGoogleLoading(true);
+
+    const { error } = await signInWithGoogle(redirectPath);
+
+    if (error) {
+      setErrorMsg(error.message);
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
+    <div className="mx-auto w-full max-w-6xl px-5 pb-10 pt-2 sm:px-8 sm:pb-16 sm:pt-4">
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
+        className="-ml-1.5 inline-flex min-h-11 items-center gap-2 px-1.5 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
       >
         <ArrowLeft className="h-4 w-4" /> Kembali ke beranda
       </Link>
 
-      <div className="mt-7 grid overflow-hidden rounded-[2rem] border border-emerald-950/10 bg-white shadow-[0_32px_100px_-52px_rgba(6,78,59,.45)] lg:grid-cols-[.95fr_1.05fr]">
+      <div className="mt-5 grid overflow-hidden rounded-[2rem] border border-emerald-950/10 bg-white shadow-[0_32px_100px_-52px_rgba(6,78,59,.45)] sm:mt-6 lg:grid-cols-[.95fr_1.05fr]">
         {/* Panel kiri: alasan akun */}
         <aside className="relative hidden overflow-hidden bg-emerald-950 p-9 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border border-white/10" />
@@ -186,7 +229,37 @@ function AuthContent() {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isSubmitting || isGoogleLoading}
+              aria-busy={isGoogleLoading}
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isGoogleLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  Menghubungkan ke Google...
+                </>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  {isLogin ? 'Masuk dengan Google' : 'Daftar dengan Google'}
+                </>
+              )}
+            </button>
+
+            <div className="my-5 flex items-center gap-3">
+              <span className="h-px flex-1 bg-slate-200" />
+              <span className="text-[11px] font-semibold uppercase tracking-[.12em] text-slate-400">
+                atau dengan email
+              </span>
+              <span className="h-px flex-1 bg-slate-200" />
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             {errorMsg && (
               <div
                 role="alert"
@@ -227,9 +300,19 @@ function AuthContent() {
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-xs font-semibold text-slate-700">
-                Kata sandi
-              </label>
+              <div className="mb-1.5 flex items-center justify-between gap-3">
+                <label htmlFor="password" className="block text-xs font-semibold text-slate-700">
+                  Kata sandi
+                </label>
+                {isLogin && (
+                  <Link
+                    href="/auth/forgot"
+                    className="text-xs font-semibold text-emerald-800 hover:underline"
+                  >
+                    Lupa kata sandi?
+                  </Link>
+                )}
+              </div>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
@@ -239,7 +322,7 @@ function AuthContent() {
                   autoComplete={isLogin ? 'current-password' : 'new-password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
+                  placeholder={isLogin ? 'Kata sandi' : 'Minimal 8 karakter'}
                   className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                 />
               </div>

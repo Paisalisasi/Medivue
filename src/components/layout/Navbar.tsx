@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/components/brand/Logo';
@@ -11,8 +10,7 @@ import {
   LayoutDashboard,
   LogIn,
   LogOut,
-  Menu,
-  X,
+  PhoneCall,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -24,19 +22,19 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { user, signOut, isLoading } = useAuth();
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
 
   const isActive = (href: string) => pathname === href;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-emerald-950/5 bg-[#fbfcf8]">
-      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8 md:h-[4.25rem]">
         <Link href="/" aria-label="Medivue beranda" className="shrink-0">
-          <Logo size="md" showTagline />
+          <span className="md:hidden">
+            <Logo size="sm" />
+          </span>
+          <span className="hidden md:inline-flex">
+            <Logo size="md" showTagline />
+          </span>
         </Link>
 
         <nav aria-label="Navigasi utama" className="hidden items-center gap-1 md:flex">
@@ -57,9 +55,42 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Aksi darurat tetap terjangkau di top bar mobile */}
+          <a
+            href="tel:119"
+            aria-label="Hubungi darurat 119"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 md:hidden"
+          >
+            <PhoneCall className="h-3.5 w-3.5" />
+            119
+          </a>
+
+          {/* Tombol masuk mobile khusus tamu di landing page */}
+          {!isLoading && !user && pathname === '/' && (
+            <Link
+              href="/auth"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-emerald-950/10 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-900/20 hover:text-emerald-900 md:hidden"
+            >
+              <LogIn className="h-3.5 w-3.5" aria-hidden="true" />
+              Masuk
+            </Link>
+          )}
+
+          {/* Shortcut dashboard di mobile saat sudah login */}
+          {!isLoading && user && (
+            <Link
+              href="/dashboard"
+              aria-label="Buka dashboard"
+              title="Buka dashboard"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-lime-200 text-sm font-bold text-emerald-950 transition hover:bg-lime-300 md:hidden"
+            >
+              {(user.email?.[0] ?? 'M').toUpperCase()}
+            </Link>
+          )}
+
           <Link
             href="/checkin"
-            className="hidden min-h-11 items-center gap-2 rounded-full bg-lime-200/80 px-5 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-lime-200 sm:inline-flex"
+            className="hidden min-h-11 items-center gap-2 rounded-full bg-lime-200/80 px-5 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-lime-200 md:inline-flex"
           >
             Cek gejala
             <ArrowRight className="h-4 w-4" />
@@ -86,74 +117,14 @@ export default function Navbar() {
           ) : (
             <Link
               href="/auth"
-              className="hidden min-h-10 items-center gap-2 rounded-xl border border-emerald-950/10 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-900/20 hover:text-emerald-900 sm:inline-flex"
+              className="hidden min-h-10 items-center gap-2 rounded-xl border border-emerald-950/10 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-900/20 hover:text-emerald-900 md:inline-flex"
             >
               <LogIn className="h-4 w-4" />
               Masuk
             </Link>
           ))}
-
-          <button
-            type="button"
-            onClick={() => setIsOpen((value) => !value)}
-            aria-expanded={isOpen}
-            aria-controls="mobile-menu"
-            aria-label={isOpen ? 'Tutup menu' : 'Buka menu'}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-950/10 bg-white text-slate-700 transition hover:bg-emerald-50 md:hidden"
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
       </div>
-
-      {isOpen && (
-        <div id="mobile-menu" className="border-t border-emerald-950/10 bg-[#fbfcf8] px-5 pb-5 pt-3 md:hidden">
-          <nav aria-label="Navigasi seluler" className="space-y-1">
-            {NAV_LINKS.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium transition ${
-                  isActive(href)
-                    ? 'bg-emerald-50 text-emerald-900'
-                    : 'text-slate-700 hover:bg-white'
-                }`}
-              >
-                {Icon && <Icon className="h-4 w-4" />}
-                {label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="mt-4 grid gap-2 border-t border-emerald-950/10 pt-4">
-            <Link
-              href="/checkin"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-lime-200/80 px-5 py-2.5 text-sm font-semibold text-emerald-950"
-            >
-              Mulai cek gejala
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            {!isLoading && (user ? (
-              <button
-                type="button"
-                onClick={() => signOut()}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-950/10 bg-white px-4 py-2.5 text-sm font-medium text-slate-700"
-              >
-                <LogOut className="h-4 w-4" />
-                Keluar ({user.email})
-              </button>
-            ) : (
-              <Link
-                href="/auth"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-950/10 bg-white px-4 py-2.5 text-sm font-medium text-slate-700"
-              >
-                <LogIn className="h-4 w-4" />
-                Masuk atau daftar
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </header>
   );
 }
