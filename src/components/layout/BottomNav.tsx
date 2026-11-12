@@ -12,7 +12,7 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * Bottom navigation untuk mobile (< md), hanya untuk pengguna yang login.
@@ -73,7 +73,7 @@ export default function BottomNav() {
         aria-label="Navigasi bawah"
         className="fixed inset-x-0 bottom-0 z-40 md:hidden"
       >
-        <div className="border-t border-emerald-950/10 bg-[#fbfcf8]/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_-12px_rgba(6,78,59,.18)] backdrop-blur-xl">
+        <div className="border-t border-[#F4F8EC]/60 bg-[#F4F8EC]/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_-12px_rgba(6,78,59,.18)] backdrop-blur-xl">
           <div className="relative mx-auto grid h-[4.5rem] max-w-6xl grid-cols-4 items-center px-2">
             {/* Bubble indikator halaman aktif */}
             <span
@@ -85,7 +85,7 @@ export default function BottomNav() {
                 transform: `translateX(${Math.max(indicatorIndex, 0) * 100}%)`,
               }}
             >
-              <span className="block h-full w-full rounded-2xl bg-emerald-100/90 ring-1 ring-emerald-200/80" />
+              <span className="block h-full w-full rounded-2xl bg-[#F4F8EC]/90 ring-1 ring-[#F4F8EC]/80" />
             </span>
 
             {/* Beranda */}
@@ -93,7 +93,7 @@ export default function BottomNav() {
               href="/"
               aria-current={isActive('home') ? 'page' : undefined}
               className={`relative z-10 flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${
-                isActive('home') ? 'text-emerald-800' : 'text-slate-500'
+                isActive('home') ? 'text-[#335581]' : 'text-slate-500'
               }`}
             >
               <Home className="h-5 w-5" strokeWidth={isActive('home') ? 2.3 : 1.9} />
@@ -105,10 +105,10 @@ export default function BottomNav() {
               href="/checkin"
               aria-current={isActive('checkin') ? 'page' : undefined}
               className={`relative z-10 flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-colors ${
-                isActive('checkin') ? 'text-emerald-900' : 'text-emerald-800'
+                isActive('checkin') ? 'text-[#335581]' : 'text-[#335581]'
               }`}
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-lime-300 text-emerald-950 shadow-sm">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4B7CB6] text-white shadow-sm">
                 <HeartPulse className="h-4 w-4" strokeWidth={2.3} />
               </span>
               <span>Cek</span>
@@ -119,7 +119,7 @@ export default function BottomNav() {
               href="/diary"
               aria-current={isActive('diary') ? 'page' : undefined}
               className={`relative z-10 flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${
-                isActive('diary') ? 'text-emerald-800' : 'text-slate-500'
+                isActive('diary') ? 'text-[#335581]' : 'text-slate-500'
               }`}
             >
               <BookHeart
@@ -137,10 +137,10 @@ export default function BottomNav() {
               aria-controls="bottom-nav-account"
               aria-label="Buka menu akun"
               className={`relative z-10 flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${
-                accountOpen ? 'text-emerald-800' : 'text-slate-500'
+                accountOpen ? 'text-[#335581]' : 'text-slate-500'
               }`}
             >
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-lime-200 text-[10px] font-bold text-emerald-950">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#4B7CB6] text-[10px] font-bold text-[#335581]">
                 {initial}
               </span>
               <span>Akun</span>
@@ -169,14 +169,14 @@ export default function BottomNav() {
             className="absolute bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-emerald-950/10 bg-white p-4 shadow-2xl"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-lime-200 text-sm font-bold text-emerald-950">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#4B7CB6] text-sm font-bold text-[#335581]">
                 {initial}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-[.14em] text-emerald-700">
+                <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#335581]">
                   Akun Medivue
                 </p>
-                <p className="truncate text-sm font-semibold text-emerald-950">
+                <p className="truncate text-sm font-semibold text-[#335581]">
                   {user.email ?? 'Pengguna Medivue'}
                 </p>
                 <p className="truncate text-[11px] text-slate-500">{displayName}</p>
@@ -195,7 +195,7 @@ export default function BottomNav() {
               <Link
                 href="/dashboard"
                 onClick={closeAccount}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#335581]"
               >
                 <LayoutDashboard className="h-4 w-4" />
                 Buka dashboard
@@ -211,7 +211,7 @@ export default function BottomNav() {
             </div>
 
             <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-5 text-slate-500">
-              <User className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" />
+              <User className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#335581]" />
               Riwayat pengecekan tetap tersimpan di browser perangkat ini.
             </p>
           </div>

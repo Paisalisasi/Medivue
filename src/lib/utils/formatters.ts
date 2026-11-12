@@ -25,6 +25,6 @@ export function formatUrgencyBadge(level: string): { label: string; color: strin
       return { label: 'Jadwalkan Konsultasi', color: 'bg-blue-600 text-white' };
     case 'pantau_di_rumah':
     default:
-      return { label: 'Pantau di Rumah', color: 'bg-emerald-600 text-white' };
+      return { label: 'Pantau di Rumah', color: 'bg-[#4B7CB6] text-white' };
   }
 }

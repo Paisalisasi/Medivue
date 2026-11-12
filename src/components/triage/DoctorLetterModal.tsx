@@ -38,7 +38,7 @@ export default function DoctorLetterModal({ letter, onClose }: Props) {
         return 'bg-blue-600 text-white border-blue-700';
       case 'pantau_di_rumah':
       default:
-        return 'bg-emerald-600 text-white border-emerald-700';
+        return 'bg-[#4B7CB6] text-white border-[#335581]';
     }
   };
 
@@ -107,7 +107,7 @@ ${letter.doctorNoteClosing}
         {/* Modal Top Bar (Hidden saat di-print) */}
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-3.5 print:hidden">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4B7CB6] text-white shadow-xs">
               <FileText className="h-4 w-4" />
             </div>
             <div>
@@ -133,7 +133,7 @@ ${letter.doctorNoteClosing}
             <button
               type="button"
               onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
+              className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-[#335581] transition"
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               <span>{copied ? 'Tersalin!' : 'Salin Teks'}</span>
@@ -156,11 +156,11 @@ ${letter.doctorNoteClosing}
           <div className="border-b-2 border-slate-800 pb-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm print:border print:border-emerald-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#4B7CB6] text-white shadow-sm print:border print:border-[#335581]">
                   <HeartPulse className="h-7 w-7" />
                 </div>
                 <div>
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 block">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-[#4B7CB6] block">
                     Medivue Clinical Triage
                   </span>
                   <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
@@ -222,11 +222,11 @@ ${letter.doctorNoteClosing}
 
           {/* BAGIAN I: IKHTISAR KLINIS NARATIF */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 uppercase tracking-wider border-b border-emerald-100 pb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#335581] uppercase tracking-wider border-b border-emerald-100 pb-1">
               <Stethoscope className="h-4 w-4 text-emerald-600" />
               <span>I. Ikhtisar Klinis Pasien (Clinical Summary)</span>
             </div>
-            <p className="text-xs sm:text-sm leading-relaxed text-slate-700 bg-emerald-50/30 p-3.5 rounded-xl border border-emerald-100/60 text-justify">
+            <p className="text-xs sm:text-sm leading-relaxed text-slate-700 bg-[#F4F8EC]/30 p-3.5 rounded-xl border border-emerald-100/60 text-justify">
               {letter.clinicalSummary}
             </p>
           </div>
@@ -325,7 +325,7 @@ ${letter.doctorNoteClosing}
             <button
               type="button"
               onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition"
+              className="flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-[#F4F8EC] px-4 py-2 text-xs font-bold text-[#335581] hover:bg-[#F4F8EC] transition"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               <span>{copied ? 'Tersalin ke Clipboard!' : 'Salin Seluruh Surat'}</span>
@@ -334,7 +334,7 @@ ${letter.doctorNoteClosing}
             <button
               type="button"
               onClick={handleSaveAndDashboard}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition"
+              className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#335581] transition"
             >
               <LayoutDashboard className="h-4 w-4" />
               <span>Simpan & Selesai</span>

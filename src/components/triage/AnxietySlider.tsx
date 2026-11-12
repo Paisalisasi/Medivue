@@ -10,7 +10,7 @@ interface Props {
 }
 
 const LEVELS = [
-  { num: 1, label: 'Sangat tenang', icon: '😌', color: 'text-emerald-700' },
+  { num: 1, label: 'Sangat tenang', icon: '😌', color: 'text-[#4B7CB6]' },
   { num: 2, label: 'Sedikit khawatir', icon: '🙂', color: 'text-teal-700' },
   { num: 3, label: 'Cukup cemas', icon: '😐', color: 'text-amber-700' },
   { num: 4, label: 'Cemas tinggi', icon: '😟', color: 'text-orange-700' },
@@ -21,7 +21,7 @@ export default function AnxietySlider({ value, onChange, label, sublabel }: Prop
   return (
     <div>
       {label && (
-        <label className="block text-sm font-semibold text-emerald-950">{label}</label>
+        <label className="block text-sm font-semibold text-[#335581]">{label}</label>
       )}
       {sublabel && (
         <p className="mt-1 text-xs leading-5 text-slate-500">{sublabel}</p>
@@ -39,12 +39,12 @@ export default function AnxietySlider({ value, onChange, label, sublabel }: Prop
               aria-label={`Tingkat kecemasan ${item.num}: ${item.label}`}
               className={`flex flex-col items-center justify-center rounded-xl border px-1 py-3 transition ${
                 isSelected
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-950 shadow-sm'
-                  : 'border-slate-200 bg-slate-50/70 text-slate-600 hover:border-emerald-200 hover:bg-emerald-50/40'
+                  ? 'border-emerald-500 bg-[#F4F8EC] text-[#335581] shadow-sm'
+                  : 'border-slate-200 bg-slate-50/70 text-slate-600 hover:border-emerald-200 hover:bg-[#F4F8EC]/40'
               }`}
             >
               <span className="text-2xl">{item.icon}</span>
-              <span className={`mt-1 text-sm font-bold ${isSelected ? 'text-emerald-900' : item.color}`}>
+              <span className={`mt-1 text-sm font-bold ${isSelected ? 'text-[#335581]' : item.color}`}>
                 {item.num}
               </span>
               <span className="mt-0.5 hidden text-center text-[10px] leading-tight text-slate-500 sm:block">

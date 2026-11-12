@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   AlertCircle,
   ArrowLeft,
@@ -53,30 +53,30 @@ export default function ResetPasswordPage() {
     <div className="mx-auto w-full max-w-4xl px-5 pb-10 pt-2 sm:px-8 sm:pb-16 sm:pt-4">
       <Link
         href="/auth"
-        className="-ml-1.5 inline-flex min-h-11 items-center gap-2 px-1.5 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
+        className="-ml-1.5 inline-flex min-h-11 items-center gap-2 px-1.5 text-sm font-medium text-slate-500 transition hover:text-[#335581]"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Kembali ke masuk
       </Link>
 
-      <div className="mt-5 overflow-hidden rounded-[2rem] border border-emerald-950/10 bg-white p-6 shadow-[0_32px_100px_-52px_rgba(6,78,59,.45)] sm:mt-6 sm:p-9">
+      <div className="mt-5 overflow-hidden rounded-[2rem] border border-[#335581]/10 bg-white p-6 shadow-[0_32px_100px_-52px_rgba(6,78,59,.45)] sm:mt-6 sm:p-9">
         <div className="mx-auto max-w-md">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-950/10 bg-[#f4f8ec] px-3 py-1.5 text-xs font-semibold text-emerald-800">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#335581]/10 bg-[#F4F8EC] px-3 py-1.5 text-xs font-semibold text-[#335581]">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Kata sandi baru
           </span>
 
           {isLoading ? (
             <div className="mt-6 flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              <Loader2 className="h-4 w-4 animate-spin text-emerald-700" aria-hidden="true" />
+              <Loader2 className="h-4 w-4 animate-spin text-[#4B7CB6]" aria-hidden="true" />
               Memeriksa tautan reset...
             </div>
           ) : isSuccess ? (
             <div className="mt-6 space-y-4">
-              <h1 className="text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-[-.03em] text-[#335581] sm:text-3xl">
                 Kata sandi diperbarui.
               </h1>
               <div
                 role="status"
-                className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm leading-6 text-emerald-800"
+                className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-[#F4F8EC] p-3.5 text-sm leading-6 text-[#335581]"
               >
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
                 <span>
@@ -85,14 +85,14 @@ export default function ResetPasswordPage() {
               </div>
               <Link
                 href="/dashboard"
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#335581]"
               >
                 Buka dashboard
               </Link>
             </div>
           ) : !user ? (
             <div className="mt-6 space-y-4">
-              <h1 className="text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-[-.03em] text-[#335581] sm:text-3xl">
                 Tautan tidak valid atau kedaluwarsa.
               </h1>
               <div
@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
               </div>
               <Link
                 href="/auth/forgot"
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#335581]"
               >
                 Minta tautan baru
               </Link>
@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
             </div>
           ) : (
             <>
-              <h1 className="mt-4 text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+              <h1 className="mt-4 text-2xl font-semibold tracking-[-.03em] text-[#335581] sm:text-3xl">
                 Buat kata sandi baru.
               </h1>
               <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       placeholder="Minimal 8 karakter"
-                      className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-[#4B7CB6] focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20"
                     />
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function ResetPasswordPage() {
                       value={confirm}
                       onChange={(event) => setConfirm(event.target.value)}
                       placeholder="Ulangi kata sandi baru"
-                      className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                      className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-[#4B7CB6] focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20"
                     />
                   </div>
                 </div>
@@ -185,7 +185,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-950/10 transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-950/10 transition hover:bg-[#335581] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? (
                     <>

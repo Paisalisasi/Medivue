@@ -6,10 +6,10 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import DisclaimerBanner from './DisclaimerBanner';
 import BottomNav from './BottomNav';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 /** Route prefixes yang tidak memerlukan Navbar/Footer global */
-const FULLSCREEN_ROUTES = ['/checkin'];
+const FULLSCREEN_ROUTES: string[] = [];
 
 /** Route yang tetap memakai shell global, tetapi tanpa Footer */
 const NO_FOOTER_ROUTES = ['/dashboard'];

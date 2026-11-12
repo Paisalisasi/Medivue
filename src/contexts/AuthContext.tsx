@@ -1,41 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/client';
 import { UserProfile } from '@/types/user';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  profile: UserProfile | null;
-  isLoading: boolean;
-  signIn: (email: string, pass: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, pass: string) => Promise<{ 
-    error: Error | null; 
-    session?: Session | null;
-    user?: User | null;
-  }>;
-  signInWithGoogle: (redirectPath?: string) => Promise<{ error: Error | null }>;
-  resetPassword: (email: string) => Promise<{ error: Error | null }>;
-  updatePassword: (password: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  profile: null,
-  isLoading: true,
-  signIn: async () => ({ error: null }),
-  signUp: async () => ({ error: null, session: null, user: null }),
-  signInWithGoogle: async () => ({ error: null }),
-  resetPassword: async () => ({ error: null }),
-  updatePassword: async () => ({ error: null }),
-  signOut: async () => {},
-  refreshProfile: async () => {},
-});
+import { AuthContext } from './AuthContextInstance';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -110,7 +79,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) return { error: new Error(error.message), session: null, user: null };
 
-      // Optional: Initialize profile in table if user created & session exists
       if (data.user && data.session) {
         try {
           await supabase.from('profiles').insert([
@@ -177,7 +145,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) return { error: new Error(error.message) };
 
-      // Cabut sesi di perangkat lain setelah kata sandi diganti.
       await supabase.auth.signOut({ scope: 'others' });
 
       return { error: null };
@@ -221,7 +188,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-// Hook dipakai lintas komponen; aturan fast-refresh tidak relevan untuk context file ini.
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);

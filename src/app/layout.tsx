@@ -5,16 +5,21 @@ import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Medivue — Pahami keluhan, tentukan langkah',
+    default: 'Medivue',
     template: '%s • Medivue',
   },
   description:
     'Medivue membantu memahami tingkat urgensi keluhan kesehatan dan langkah berikutnya. Informasi awal, bukan pengganti diagnosis tenaga medis.',
   applicationName: 'Medivue',
+  icons: {
+    icon: '/favicon.svg?v=2',
+    shortcut: '/favicon.svg?v=2',
+    apple: '/favicon.svg?v=2',
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#064e3b',
+  themeColor: '#335581',
 };
 
 export default function RootLayout({
@@ -24,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className="flex min-h-screen flex-col bg-[#f6f8f4] text-slate-900 antialiased selection:bg-lime-200 selection:text-emerald-950">
+      <body className="flex min-h-screen flex-col bg-[#F4F8EC] text-slate-900 antialiased selection:bg-[#7FB069] selection:text-[#1F3D2B]">
         <AuthProvider>
           <ShellLayout>{children}</ShellLayout>
         </AuthProvider>

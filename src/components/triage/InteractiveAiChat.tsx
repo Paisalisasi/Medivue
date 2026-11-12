@@ -334,7 +334,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           const heading = trimmed.match(/^(#{1,6})\s+(.*)$/);
           if (heading) {
             return (
-              <p key={idx} className="pt-2 text-[13px] font-bold uppercase tracking-wide text-emerald-900 first:pt-0">
+              <p key={idx} className="pt-2 text-[13px] font-bold uppercase tracking-wide text-[#335581] first:pt-0">
                 {renderInline(heading[2].trim(), `h-${idx}`)}
               </p>
             );
@@ -358,7 +358,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           if (numbered) {
             return (
               <div key={idx} className="flex items-start gap-2 pl-1">
-                <span className="mt-[0.05rem] shrink-0 text-xs font-bold text-emerald-700">
+                <span className="mt-[0.05rem] shrink-0 text-xs font-bold text-[#4B7CB6]">
                   {numbered[1]}.
                 </span>
                 <span className="min-w-0">{renderInline(numbered[2], `n-${idx}`)}</span>
@@ -392,7 +392,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
 
         {/* Sidebar Header */}
         <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-          <Link href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-emerald-700 transition text-xs mb-4">
+          <Link href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-[#4B7CB6] transition text-xs mb-4">
             <ArrowLeft className="h-3.5 w-3.5" />
             Kembali ke Dashboard
           </Link>
@@ -409,7 +409,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
             onClick={() => setSidebarTab('triase')}
             className={`flex-1 py-2.5 text-xs font-semibold transition ${
               sidebarTab === 'triase'
-                ? 'text-emerald-700 border-b-2 border-emerald-600'
+                ? 'text-[#4B7CB6] border-b-2 border-emerald-600'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -481,7 +481,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                   <div className="space-y-1.5">
                     {result.nextSteps.map((step, i) => (
                       <div key={i} className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700 mt-0.5">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#F4F8EC] text-[10px] font-bold text-[#4B7CB6] mt-0.5">
                           {i + 1}
                         </span>
                         <span>{step}</span>
@@ -539,7 +539,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
             type="button"
             onClick={handleEndChat}
             disabled={isGeneratingLetter}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#335581] disabled:opacity-50 transition shadow-sm"
           >
             {isGeneratingLetter ? (
               <><Loader2 className="h-4 w-4 animate-spin" />Menyusun Surat...</>
@@ -579,7 +579,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 <Bot className="h-5 w-5" />
                 <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-white" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F4F8EC]0 border-2 border-white" />
                 </span>
               </div>
               <div className="min-w-0">
@@ -591,7 +591,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 </div>
                 <p className="text-[11px] text-slate-500 truncate">
                   {formData.mainSymptom} • {formData.severity ?? 'sedang'} •{' '}
-                  <span className="text-emerald-700 font-semibold">
+                  <span className="text-[#4B7CB6] font-semibold">
                     {isLiveAI === null ? 'Medivue AI' : isLiveAI ? 'AI aktif' : 'Mode pendamping'}
                   </span>
                 </p>
@@ -606,7 +606,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               type="button"
               onClick={handleEndChat}
               disabled={isGeneratingLetter}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50 transition"
+              className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-3 py-2 text-xs font-bold text-white hover:bg-[#335581] disabled:opacity-50 transition"
             >
               {isGeneratingLetter
                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -642,7 +642,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                   <ul className="mt-1.5 space-y-1 text-xs text-slate-700">
                     {result.nextSteps.slice(0, 3).map((step, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-emerald-500" />
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#F4F8EC]0" />
                         {step}
                       </li>
                     ))}
@@ -697,7 +697,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 {/* Avatar */}
                 <div
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${
-                    isUser ? 'bg-emerald-600' : 'bg-slate-800'
+                    isUser ? 'bg-[#4B7CB6]' : 'bg-slate-800'
                   }`}
                 >
                   {isUser ? <UserIcon className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -707,7 +707,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 <div
                   className={`max-w-[80%] sm:max-w-[72%] rounded-2xl px-4 py-3 shadow-xs ${
                     isUser
-                      ? 'bg-emerald-600 text-white rounded-br-sm'
+                      ? 'bg-[#4B7CB6] text-white rounded-br-sm'
                       : 'bg-white text-slate-800 border border-slate-200 rounded-bl-sm'
                   }`}
                 >
@@ -752,7 +752,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 type="button"
                 disabled={isLoading}
                 onClick={() => handleSendMessage(q)}
-                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-50 transition"
+                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 hover:border-emerald-300 hover:bg-[#F4F8EC] hover:text-[#335581] disabled:opacity-50 transition"
               >
                 {q}
               </button>
@@ -773,12 +773,12 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               onChange={(e) => setInputText(e.target.value)}
               disabled={isLoading}
               placeholder="Tanyakan keluhan Anda (misal: boleh minum es? kapan harus periksa?)..."
-              className="flex-1 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:opacity-60 transition"
+              className="flex-1 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20 disabled:opacity-60 transition"
             />
             <button
               type="submit"
               disabled={isLoading || !inputText.trim()}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 transition shadow-sm"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#4B7CB6] text-white hover:bg-[#335581] disabled:opacity-40 transition shadow-sm"
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>

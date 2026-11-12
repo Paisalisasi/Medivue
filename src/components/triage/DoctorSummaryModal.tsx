@@ -81,7 +81,7 @@ Pertanyaan yang Disiapkan untuk Konsultasi:
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
+            className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#335581] transition"
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? 'Tersalin ke Clipboard!' : 'Salin Ringkasan'}

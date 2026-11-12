@@ -5,7 +5,7 @@ export default function DisclaimerBanner() {
   return (
     <aside
       aria-label="Informasi medis"
-      className="w-full border-b border-amber-200/70 bg-[#fff8e8] px-5 py-2.5 text-xs text-amber-950 sm:px-8"
+      className="w-full border-b border-[#335581]/20 bg-[#F4F8EC] px-5 py-2.5 text-xs text-amber-950 sm:px-8"
     >
       <div className="mx-auto flex max-w-6xl items-start gap-2.5">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />

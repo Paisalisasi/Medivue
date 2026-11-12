@@ -10,35 +10,38 @@
   }
 
   body {
-    background-color: #f6f8f4;
-    color: #1e293b;
+    background: linear-gradient(to bottom, #F4F8EC, #FFFFFF);
+    color: #2C3E50;
     font-family: var(--font-sans);
     text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    background-color: #d9f99d;
-    color: #052e16;
+    background-color: #7FB069;
+    color: #1F3D2B;
   }
 
   :focus-visible {
-    outline-color: #047857;
+    outline-color: #4B7CB6;
   }
 }
 
-/* Animasi napas tenang (Breathing Exercise) */
-@keyframes calmBreathe {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.75;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 1;
-  }
+/* Transisi antar slide/section */
+.section-transition-light {
+  background: linear-gradient(to bottom, #F4F8EC, #FFFFFF);
 }
 
+.section-transition-white {
+  background: linear-gradient(to bottom, #FFFFFF, #F4F8EC);
+}
+
+.section-transition-gray {
+  background: linear-gradient(to bottom, #F4F8EC, #FFFFFF);
+}
+
+/* Animasi napas tenang */
 .animate-breathe {
+  background: linear-gradient(180deg, #4B7CB6 0%, #335581 100%);
   animation: calmBreathe 8s ease-in-out infinite;
 }
 

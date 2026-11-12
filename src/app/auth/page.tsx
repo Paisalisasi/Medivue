@@ -3,7 +3,7 @@
 import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/brand/Logo';
 import {
   AlertCircle,
@@ -146,23 +146,23 @@ function AuthContent() {
     <div className="mx-auto w-full max-w-6xl px-5 pb-10 pt-2 sm:px-8 sm:pb-16 sm:pt-4">
       <Link
         href="/"
-        className="-ml-1.5 inline-flex min-h-11 items-center gap-2 px-1.5 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
+        className="-ml-1.5 inline-flex min-h-11 items-center gap-2 px-1.5 text-sm font-medium text-slate-500 transition hover:text-[#335581]"
       >
         <ArrowLeft className="h-4 w-4" /> Kembali ke beranda
       </Link>
 
-      <div className="mt-5 grid overflow-hidden rounded-[2rem] border border-emerald-950/10 bg-white shadow-[0_32px_100px_-52px_rgba(6,78,59,.45)] sm:mt-6 lg:grid-cols-[.95fr_1.05fr]">
+      <div className="mt-5 grid overflow-hidden rounded-[2rem] border border-[#F4F8EC]/60 bg-white shadow-[0_32px_100px_-52px_rgba(6,78,59,.45)] sm:mt-6 lg:grid-cols-[.95fr_1.05fr]">
         {/* Panel kiri: alasan akun */}
-        <aside className="relative hidden overflow-hidden bg-emerald-950 p-9 text-white lg:flex lg:flex-col lg:justify-between">
+        <aside className="relative hidden overflow-hidden bg-[#335581] p-9 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full border border-white/10" />
 
           <div className="relative">
-            <Logo size="md" inverted showTagline />
+            <Logo size="md" inverted />
             <h2 className="mt-10 max-w-sm text-3xl font-semibold leading-tight tracking-[-.035em]">
               Riwayat kesehatanmu, lebih rapi dan mudah ditemukan.
             </h2>
-            <p className="mt-3 max-w-sm text-sm leading-6 text-emerald-100/70">
+            <p className="mt-3 max-w-sm text-sm leading-6 text-white/70">
               Akun membuat pengecekan dan catatanmu tersimpan rapi, tanpa mengubah cara Medivue
               membantu — tetap tenang, tetap sederhana.
             </p>
@@ -173,9 +173,9 @@ function AuthContent() {
                 { icon: Sparkles, text: 'Ringkasan siap dibawa ke dokter' },
                 { icon: ShieldCheck, text: 'Data kesehatan dilindungi Row Level Security' },
               ].map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-start gap-3 text-sm text-emerald-50/90">
+                <li key={text} className="flex items-start gap-3 text-sm text-white/90">
                   <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10">
-                    <Icon className="h-4 w-4 text-lime-200" />
+                    <Icon className="h-4 w-4 text-[#4B7CB6]" />
                   </span>
                   {text}
                 </li>
@@ -183,7 +183,7 @@ function AuthContent() {
             </ul>
           </div>
 
-          <p className="relative mt-10 border-t border-white/10 pt-5 text-xs leading-5 text-emerald-100/60">
+          <p className="relative mt-10 border-t border-white/10 pt-5 text-xs leading-5 text-white/60">
             Medivue memberi informasi awal, bukan diagnosis. Selalu utamakan pemeriksaan tenaga
             medis.
           </p>
@@ -192,11 +192,11 @@ function AuthContent() {
         {/* Panel kanan: form */}
         <div className="p-6 sm:p-9">
           <div className="lg:hidden">
-            <Logo size="md" showTagline />
+            <Logo size="md" />
           </div>
 
           <div className="mt-6 lg:mt-0">
-            <h1 className="text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+            <h1 className="text-2xl font-semibold tracking-[-.03em] text-[#335581] sm:text-3xl">
               {isLogin ? 'Selamat datang kembali.' : 'Buat akun Medivue.'}
             </h1>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -212,7 +212,7 @@ function AuthContent() {
               onClick={() => switchMode(true)}
               aria-pressed={isLogin}
               className={`rounded-lg py-2.5 transition ${
-                isLogin ? 'bg-white text-emerald-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                isLogin ? 'bg-white text-[#335581] shadow-sm' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               Masuk
@@ -222,7 +222,7 @@ function AuthContent() {
               onClick={() => switchMode(false)}
               aria-pressed={!isLogin}
               className={`rounded-lg py-2.5 transition ${
-                !isLogin ? 'bg-white text-emerald-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                !isLogin ? 'bg-white text-[#335581] shadow-sm' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               Daftar
@@ -273,9 +273,9 @@ function AuthContent() {
             {successMsg && (
               <div
                 role="status"
-                className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs leading-5 text-emerald-800"
+                className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-[#F4F8EC] p-3.5 text-xs leading-5 text-[#335581]"
               >
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#4B7CB6]" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -294,7 +294,7 @@ function AuthContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@email.com"
-                  className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-[#4B7CB6] focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20"
                 />
               </div>
             </div>
@@ -307,7 +307,7 @@ function AuthContent() {
                 {isLogin && (
                   <Link
                     href="/auth/forgot"
-                    className="text-xs font-semibold text-emerald-800 hover:underline"
+                    className="text-xs font-semibold text-[#335581] hover:underline"
                   >
                     Lupa kata sandi?
                   </Link>
@@ -323,7 +323,7 @@ function AuthContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={isLogin ? 'Kata sandi' : 'Minimal 8 karakter'}
-                  className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 text-sm text-slate-800 placeholder-slate-400 transition focus:border-[#4B7CB6] focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20"
                 />
               </div>
             </div>
@@ -331,7 +331,7 @@ function AuthContent() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-950/10 transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-[#335581]/25 transition hover:bg-[#335581] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 'Memproses...'
@@ -347,7 +347,7 @@ function AuthContent() {
             </button>
 
             <p className="flex items-start gap-2 text-[11px] leading-5 text-slate-500">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#335581]" />
               Privasi data kesehatan dilindungi Row Level Security (RLS).
             </p>
           </form>
@@ -355,7 +355,7 @@ function AuthContent() {
           <div className="mt-6 border-t border-slate-100 pt-4">
             <p className="text-xs leading-5 text-slate-500">
               Belum siap punya akun? Kamu tetap bisa{' '}
-              <Link href="/checkin" className="font-semibold text-emerald-800 hover:underline">
+              <Link href="/checkin" className="font-semibold text-[#335581] hover:underline">
                 cek gejala sebagai tamu
               </Link>
               . Riwayat tamu tersimpan di browser perangkat ini.

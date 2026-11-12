@@ -19,7 +19,7 @@ import {
 import Logo from '@/components/brand/Logo';
 import AnxietySlider from './AnxietySlider';
 import InteractiveAiChat from './InteractiveAiChat';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { readSessions, saveSessions } from '@/lib/storage';
 import type { SymptomPayload, TriageResult } from '@/types/triage';
 import type { SessionHistoryItem } from '@/types/session';
@@ -72,13 +72,13 @@ const SEVERITY_OPTIONS: {
     value: 'ringan',
     label: 'Ringan',
     description: 'Masih bisa beraktivitas seperti biasa.',
-    tone: 'border-emerald-200 bg-emerald-50/60 text-emerald-950',
+    tone: 'border-emerald-200 bg-[#F4F8EC]/60 text-[#335581]',
   },
   {
     value: 'sedang',
     label: 'Sedang',
     description: 'Cukup mengganggu, butuh istirahat sesekali.',
-    tone: 'border-amber-200 bg-amber-50/60 text-amber-950',
+    tone: 'border-amber-200 bg-amber-50/60 text-[#335581]',
   },
   {
     value: 'berat',
@@ -269,44 +269,20 @@ export default function StepChat() {
   const progress = stage === 'review' ? 100 : ((stepIndex + 1) / TOTAL_STEPS) * 100;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#f6f8f4]">
-      <header className="sticky top-0 z-40 shrink-0 border-b border-emerald-950/10 bg-[#fbfcf8]/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
-          <Link href="/" aria-label="Medivue beranda">
-            <Logo size="sm" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <a
-              href="tel:119"
-              className="hidden items-center gap-1.5 text-xs font-semibold text-rose-700 transition hover:text-rose-800 sm:flex"
-            >
-              <PhoneCall className="h-3.5 w-3.5" />
-              Darurat: 119
-            </a>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-950/10 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:text-emerald-900"
-            >
-              <LayoutDashboard className="h-3.5 w-3.5" />
-              Dashboard
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="flex min-h-dvh flex-col bg-[#F4F8EC]">
       {stage === 'intro' && (
         <div className="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 sm:py-16">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-emerald-900">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-[#335581]">
             <ArrowLeft className="h-4 w-4" /> Kembali ke beranda
           </Link>
 
           <div className="mt-8 grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-900">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-900/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#335581]">
                 <HeartPulse className="h-3.5 w-3.5" />
                 Cek gejala · sekitar 2 menit
               </span>
-              <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-[1.08] tracking-[-.045em] text-emerald-950 sm:text-5xl">
+              <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-[1.08] tracking-[-.045em] text-[#335581] sm:text-5xl">
                 Sebelum mulai, tarik napas sebentar.
               </h1>
               <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
@@ -321,7 +297,7 @@ export default function StepChat() {
                   'Kamu tetap yang menentukan langkah berikutnya',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-slate-700">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#F4F8EC] text-[#4B7CB6]">
                       <Check className="h-3 w-3" />
                     </span>
                     {item}
@@ -333,32 +309,32 @@ export default function StepChat() {
                 <button
                   type="button"
                   onClick={startQuestions}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-950/10 transition hover:bg-emerald-800"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-950/10 transition hover:bg-[#335581]"
                 >
                   Mulai cek gejala <ArrowRight className="h-4 w-4" />
                 </button>
                 <Link
                   href="/#cara-kerja"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-emerald-950/15 bg-white px-5 py-3 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-50"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-emerald-950/15 bg-white px-5 py-3 text-sm font-semibold text-[#335581] transition hover:bg-[#F4F8EC]"
                 >
                   Lihat cara kerjanya
                 </Link>
               </div>
 
               <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#4B7CB6]" />
                 Bisa dimulai tanpa akun. Riwayat tersimpan di browser perangkat ini.
               </p>
             </div>
 
-            <div className="rounded-[1.75rem] border border-emerald-950/10 bg-white p-6 shadow-[0_24px_80px_-40px_rgba(6,78,59,.35)]">
+            <div className="rounded-[1.75rem] border border-[#335581]/10 bg-white p-6 shadow-[0_24px_80px_-40px_rgba(6,78,59,.35)]">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">Setelah selesai</p>
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-100 text-emerald-800">
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-[#4B7CB6]">Setelah selesai</p>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4B7CB6]/10 text-[#335581]">
                   <ClipboardList className="h-4 w-4" />
                 </span>
               </div>
-              <h2 className="mt-3 text-xl font-semibold tracking-tight text-emerald-950">
+              <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#335581]">
                 Kamu akan mendapat tiga hal
               </h2>
 
@@ -368,12 +344,12 @@ export default function StepChat() {
                   { icon: CheckCircle2, title: 'Langkah awal', text: 'Saran praktis dan tanda yang perlu diwaspadai.' },
                   { icon: ClipboardList, title: 'Ringkasan dokter', text: 'Catatan siap dibawa saat konsultasi.' },
                 ].map(({ icon: Icon, title, text }) => (
-                  <div key={title} className="flex items-start gap-3 rounded-2xl bg-[#f6f8f4] p-4">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
+                  <div key={title} className="flex items-start gap-3 rounded-2xl bg-[#F4F8EC] p-4">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#4B7CB6] shadow-sm">
                       <Icon className="h-4 w-4" />
                     </span>
                     <div>
-                      <p className="text-sm font-semibold text-emerald-950">{title}</p>
+                      <p className="text-sm font-semibold text-[#335581]">{title}</p>
                       <p className="mt-0.5 text-xs leading-5 text-slate-600">{text}</p>
                     </div>
                   </div>
@@ -401,18 +377,18 @@ export default function StepChat() {
               <button
                 type="button"
                 onClick={() => setStage('intro')}
-                className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-[#335581]"
               >
                 <ArrowLeft className="h-4 w-4" /> Kembali
               </button>
 
-              <div className="mt-6 rounded-2xl border border-emerald-950/10 bg-white p-5">
-                <p className="text-xs font-bold uppercase tracking-[.14em] text-emerald-700">Progres check-in</p>
+              <div className="mt-6 rounded-2xl border border-[#335581]/10 bg-white p-5">
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-[#4B7CB6]">Progres check-in</p>
                 <p className="mt-1 text-sm text-slate-500">
                   Langkah {stepIndex + 1} dari {TOTAL_STEPS}
                 </p>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-emerald-700 transition-all duration-300" style={{ width: `${progress}%` }} />
+                  <div className="h-full rounded-full bg-[#4B7CB6] transition-all duration-300" style={{ width: `${progress}%` }} />
                 </div>
 
                 <ol className="mt-5 space-y-1">
@@ -426,20 +402,20 @@ export default function StepChat() {
                           onClick={() => goToStep(index)}
                           disabled={index > stepIndex}
                           className={`flex w-full items-start gap-3 rounded-xl px-2.5 py-2.5 text-left transition ${
-                            isActive ? 'bg-emerald-50' : isDone ? 'hover:bg-slate-50' : 'opacity-60'
+                            isActive ? 'bg-[#F4F8EC]' : isDone ? 'hover:bg-slate-50' : 'opacity-60'
                           }`}
                         >
                           <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
                             isDone
-                              ? 'bg-emerald-700 text-white'
+                              ? 'bg-[#4B7CB6] text-white'
                               : isActive
-                                ? 'bg-emerald-900 text-white'
+                                ? 'bg-[#4B7CB6] text-white'
                                 : 'bg-slate-100 text-slate-500'
                           }`}>
                             {isDone ? <Check className="h-3 w-3" /> : index + 1}
                           </span>
                           <span>
-                            <span className={`block text-xs font-semibold ${isActive ? 'text-emerald-900' : 'text-slate-700'}`}>
+                            <span className={`block text-xs font-semibold ${isActive ? 'text-[#335581]' : 'text-slate-700'}`}>
                               {step.title}
                             </span>
                             <span className="mt-0.5 block text-[11px] leading-4 text-slate-500">{step.helper}</span>
@@ -451,12 +427,12 @@ export default function StepChat() {
                 </ol>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-amber-200/70 bg-[#fff8e8] p-4">
-                <p className="text-xs font-semibold text-amber-950">Gejala terasa darurat?</p>
-                <p className="mt-1 text-[11px] leading-5 text-amber-900/80">
+              <div className="mt-4 rounded-2xl border border-[#335581]/20 bg-[#F4F8EC] p-4">
+                <p className="text-xs font-semibold text-[#335581]">Gejala terasa darurat?</p>
+                <p className="mt-1 text-[11px] leading-5 text-[#335581]/80">
                   Jangan menunggu hasil aplikasi. Segera cari bantuan medis.
                 </p>
-                <a href="tel:119" className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 hover:underline">
+                <a href="tel:119" className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 hover:underline">
                   <PhoneCall className="h-3.5 w-3.5" /> Hubungi 119
                 </a>
               </div>
@@ -471,25 +447,25 @@ export default function StepChat() {
                 >
                   <ArrowLeft className="h-3.5 w-3.5" /> Kembali
                 </button>
-                <span className="text-xs font-semibold text-emerald-800">
+                <span className="text-xs font-semibold text-[#335581]">
                   {stepIndex + 1} / {TOTAL_STEPS}
                 </span>
               </div>
 
               <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-slate-200/70 lg:hidden">
-                <div className="h-full rounded-full bg-emerald-700 transition-all duration-300" style={{ width: `${progress}%` }} />
+                <div className="h-full rounded-full bg-[#4B7CB6] transition-all duration-300" style={{ width: `${progress}%` }} />
               </div>
 
-              <div className="rounded-[1.75rem] border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
+              <div className="rounded-[1.75rem] border border-[#335581]/10 bg-white p-5 shadow-sm sm:p-8">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F4F8EC] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#335581]">
                     <Sparkles className="h-3 w-3" />
                     Langkah {stepIndex + 1}
                   </span>
                   <span className="text-[11px] font-medium text-slate-400">{STEP_META[stepIndex].title}</span>
                 </div>
 
-                <h1 className="mt-4 text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+                <h1 className="mt-4 text-2xl font-semibold tracking-[-.03em] text-[#335581] sm:text-3xl">
                   {stepIndex === 0 && 'Apa yang paling kamu rasakan sekarang?'}
                   {stepIndex === 1 && 'Sudah berapa lama gejala ini berlangsung?'}
                   {stepIndex === 2 && 'Seberapa besar gejala mengganggu aktivitasmu?'}
@@ -516,7 +492,7 @@ export default function StepChat() {
                         }}
                         placeholder="Contoh: sakit kepala sejak semalam"
                         autoFocus
-                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20"
                       />
                       <div>
                         <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">Pilihan cepat</p>
@@ -528,8 +504,8 @@ export default function StepChat() {
                               onClick={() => setSymptomInput(chip)}
                               className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
                                 symptomInput === chip
-                                  ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-                                  : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50'
+                                  ? 'border-emerald-300 bg-[#F4F8EC] text-[#335581]'
+                                  : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-emerald-300 hover:bg-[#F4F8EC]'
                               }`}
                             >
                               {chip}
@@ -551,12 +527,12 @@ export default function StepChat() {
                             onClick={() => updateForm({ duration: option })}
                             className={`flex items-center justify-between rounded-xl border px-4 py-3.5 text-sm font-medium transition ${
                               selected
-                                ? 'border-emerald-400 bg-emerald-50 text-emerald-950'
-                                : 'border-slate-200 bg-slate-50/60 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50/60'
+                                ? 'border-emerald-400 bg-[#F4F8EC] text-[#335581]'
+                                : 'border-slate-200 bg-slate-50/60 text-slate-700 hover:border-emerald-300 hover:bg-[#F4F8EC]/60'
                             }`}
                           >
                             {option}
-                            <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${selected ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-transparent'}`}>
+                            <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${selected ? 'border-emerald-600 bg-[#4B7CB6] text-white' : 'border-slate-300 bg-white text-transparent'}`}>
                               <Check className="h-3 w-3" />
                             </span>
                           </button>
@@ -575,10 +551,10 @@ export default function StepChat() {
                             type="button"
                             onClick={() => updateForm({ severity: option.value })}
                             className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition ${
-                              selected ? option.tone : 'border-slate-200 bg-slate-50/60 hover:border-emerald-200 hover:bg-emerald-50/40'
+                              selected ? option.tone : 'border-slate-200 bg-slate-50/60 hover:border-emerald-200 hover:bg-[#F4F8EC]/40'
                             }`}
                           >
-                            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-slate-300 bg-white text-transparent'}`}>
+                            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-emerald-600 bg-[#4B7CB6] text-white' : 'border-slate-300 bg-white text-transparent'}`}>
                               <Check className="h-3 w-3" />
                             </span>
                             <span>
@@ -603,8 +579,8 @@ export default function StepChat() {
                               onClick={() => toggleAccompanying(option)}
                               className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
                                 selected
-                                  ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-                                  : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50'
+                                  ? 'border-emerald-300 bg-[#F4F8EC] text-[#335581]'
+                                  : 'border-slate-200 bg-slate-50/70 text-slate-700 hover:border-emerald-300 hover:bg-[#F4F8EC]'
                               }`}
                             >
                               {option}
@@ -625,13 +601,13 @@ export default function StepChat() {
                             }
                           }}
                           placeholder="Gejala lain (opsional)"
-                          className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                          className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20"
                         />
                         <button
                           type="button"
                           onClick={addCustomAccompanying}
                           disabled={!accompanyingInput.trim()}
-                          className="shrink-0 rounded-xl border border-emerald-950/10 bg-white px-4 py-2.5 text-xs font-semibold text-emerald-900 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="shrink-0 rounded-xl border border-[#335581]/10 bg-white px-4 py-2.5 text-xs font-semibold text-[#335581] transition hover:bg-[#F4F8EC] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Tambah
                         </button>
@@ -646,14 +622,14 @@ export default function StepChat() {
                         onChange={(value) => updateForm({ anxietyBefore: value })}
                       />
                       <p className="mt-3 text-center text-xs text-slate-500">
-                        Kamu memilih: <span className="font-semibold text-emerald-900">{ANXIETY_LABELS[(formData.anxietyBefore ?? 3) - 1]}</span>
+                        Kamu memilih: <span className="font-semibold text-[#335581]">{ANXIETY_LABELS[(formData.anxietyBefore ?? 3) - 1]}</span>
                       </p>
                     </div>
                   )}
                 </div>
 
                 {errorMessage && (
-                  <div role="alert" className="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                  <div role="alert" className="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
                     <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white">!</span>
                     {errorMessage}
                   </div>
@@ -672,7 +648,7 @@ export default function StepChat() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#4B7CB6] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#335581]"
                   >
                     {stepIndex === TOTAL_STEPS - 1 ? 'Tinjau jawaban' : 'Lanjut'}
                     <ArrowRight className="h-4 w-4" />
@@ -689,17 +665,17 @@ export default function StepChat() {
           <button
             type="button"
             onClick={() => editStep(TOTAL_STEPS - 1)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-emerald-900"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-[#335581]"
           >
             <ArrowLeft className="h-4 w-4" /> Ubah jawaban
           </button>
 
-          <div className="mt-6 rounded-[1.75rem] border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+          <div className="mt-6 rounded-[1.75rem] border border-[#335581]/10 bg-white p-5 shadow-sm sm:p-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F4F8EC] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#335581]">
               <ClipboardList className="h-3.5 w-3.5" />
               Tinjau jawaban
             </span>
-            <h1 className="mt-3 text-2xl font-semibold tracking-[-.03em] text-emerald-950 sm:text-3xl">
+            <h1 className="mt-3 text-2xl font-semibold tracking-[-.03em] text-[#335581] sm:text-3xl">
               Sebentar lagi selesai.
             </h1>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -730,7 +706,7 @@ export default function StepChat() {
                   <button
                     type="button"
                     onClick={() => editStep(row.step)}
-                    className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-50"
+                    className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#335581] transition hover:bg-[#F4F8EC]"
                   >
                     Ubah
                   </button>
@@ -739,13 +715,13 @@ export default function StepChat() {
             </div>
 
             {errorMessage && (
-              <div role="alert" className="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+              <div role="alert" className="mt-5 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
                 <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white">!</span>
                 {errorMessage}
               </div>
             )}
 
-            <div className="mt-6 rounded-xl border border-amber-200/70 bg-[#fff8e8] p-3.5 text-[11px] leading-5 text-amber-950">
+            <div className="mt-6 rounded-xl border border-[#335581]/20 bg-[#F4F8EC] p-3.5 text-[11px] leading-5 text-[#335581]">
               <strong>Ingat:</strong> hasil Medivue adalah panduan awal, bukan diagnosis. Jika gejalanya
               terasa berat atau darurat, segera ke IGD atau hubungi 119.
             </div>
@@ -754,7 +730,7 @@ export default function StepChat() {
               type="button"
               onClick={submitTriage}
               disabled={isLoading}
-              className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-950/10 transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-950/10 transition hover:bg-[#335581] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? (
                 <>
@@ -763,7 +739,7 @@ export default function StepChat() {
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 text-lime-200" />
+                  <Sparkles className="h-4 w-4 text-white" />
                   Analisis sekarang
                 </>
               )}
