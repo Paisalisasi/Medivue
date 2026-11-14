@@ -9,25 +9,21 @@ import {
   Bot,
   User as UserIcon,
   Loader2,
-  Wind,
   RotateCcw,
   AlertTriangle,
   HeartPulse,
   FileCheck2,
-  CheckCircle2,
   ShieldAlert,
   CalendarCheck,
   Home,
   Clock,
   ArrowLeft,
   ChevronRight,
-  Info,
-  LayoutDashboard,
 } from 'lucide-react';
 import DoctorLetterModal from './DoctorLetterModal';
-import BreathingExercise from '../calm/BreathingExercise';
-import RedFlagAlert from './RedFlagAlert';
-import Logo from '@/components/brand/Logo';
+import BreathingExercise from '@/components/organisms/calm/BreathingExercise';
+import RedFlagAlert from '@/components/molecules/triage/RedFlagAlert';
+import Logo from '@/components/atoms/brand/Logo';
 import { URGENCY_META } from '@/lib/urgency';
 import type { DoctorLetterData } from '@/types/letter';
 
@@ -54,10 +50,10 @@ const SUGGESTED_QUESTIONS = [
 
 function UrgencyIcon({ level }: { level: UrgencyLevel }) {
   switch (level) {
-    case 'darurat': return <ShieldAlert className="h-5 w-5 text-rose-600" />;
-    case 'segera': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
-    case 'terjadwal': return <CalendarCheck className="h-5 w-5 text-blue-600" />;
-    default: return <Home className="h-5 w-5 text-emerald-600" />;
+    case 'darurat': return <ShieldAlert className="h-5 w-5 text-danger" />;
+    case 'segera': return <AlertTriangle className="h-5 w-5 text-warning" />;
+    case 'terjadwal': return <CalendarCheck className="h-5 w-5 text-brand-600" />;
+    default: return <Home className="h-5 w-5 text-success" />;
   }
 }
 
@@ -68,7 +64,6 @@ export default function InteractiveAiChat({ result, formData, onReset }: Props) 
   const [hasResponseStarted, setHasResponseStarted] = useState(false);
   const [isGeneratingLetter, setIsGeneratingLetter] = useState(false);
   const [doctorLetter, setDoctorLetter] = useState<DoctorLetterData | null>(null);
-  const [showBreathing, setShowBreathing] = useState(false);
   const [isLiveAI, setIsLiveAI] = useState<boolean | null>(null);
   const [sidebarTab, setSidebarTab] = useState<'triase' | 'napas'>('triase');
 
@@ -76,6 +71,15 @@ export default function InteractiveAiChat({ result, formData, onReset }: Props) 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const meta = URGENCY_META[result.urgencyLevel] ?? URGENCY_META.pantau_di_rumah;
+
+  // Beri tahu ShellLayout/FAB bahwa sesi tanya jawab AI sedang aktif,
+  // supaya Navbar/Footer/BottomNav disembunyikan dan posisi FAB digeser.
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('medivue:ai-chat', { detail: { active: true } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('medivue:ai-chat', { detail: { active: false } }));
+    };
+  }, []);
 
   // Pesan sambutan awal
   useEffect(() => {
@@ -334,7 +338,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           const heading = trimmed.match(/^(#{1,6})\s+(.*)$/);
           if (heading) {
             return (
-              <p key={idx} className="pt-2 text-[13px] font-bold uppercase tracking-wide text-[#335581] first:pt-0">
+              <p key={idx} className="pt-2 text-[13px] font-bold uppercase tracking-wide text-brand-700 first:pt-0">
                 {renderInline(heading[2].trim(), `h-${idx}`)}
               </p>
             );
@@ -347,7 +351,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           if (bullet) {
             return (
               <div key={idx} className="flex items-start gap-2 pl-1">
-                <span className="mt-[0.15rem] shrink-0 text-xs font-bold text-emerald-600">•</span>
+                <span className="mt-[0.15rem] shrink-0 text-xs font-bold text-brand-600">•</span>
                 <span className="min-w-0">{renderInline(bullet[2], `b-${idx}`)}</span>
               </div>
             );
@@ -358,7 +362,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           if (numbered) {
             return (
               <div key={idx} className="flex items-start gap-2 pl-1">
-                <span className="mt-[0.05rem] shrink-0 text-xs font-bold text-[#4B7CB6]">
+                <span className="mt-[0.05rem] shrink-0 text-xs font-bold text-brand-500">
                   {numbered[1]}.
                 </span>
                 <span className="min-w-0">{renderInline(numbered[2], `n-${idx}`)}</span>
@@ -370,7 +374,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           const quote = body.match(/^>\s?(.*)$/);
           if (quote) {
             return (
-              <p key={idx} className="border-l-2 border-emerald-300 pl-3 text-slate-600">
+              <p key={idx} className="border-l-2 border-brand-300 pl-3 text-slate-600">
                 {renderInline(quote[1], `q-${idx}`)}
               </p>
             );
@@ -392,13 +396,19 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
 
         {/* Sidebar Header */}
         <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-          <Link href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-[#4B7CB6] transition text-xs mb-4">
+          <Link href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-brand-500 transition text-xs mb-4">
             <ArrowLeft className="h-3.5 w-3.5" />
             Kembali ke Dashboard
           </Link>
-          <div>
-            <Logo size="sm" />
-            <p className="mt-2 text-[11px] text-slate-500">AI health triage</p>
+          <div className="flex justify-center py-1">
+            <Link
+              href="/dashboard"
+              aria-label="Kembali ke dashboard"
+              title="Kembali ke dashboard"
+              className="inline-flex rounded-lg transition hover:opacity-80"
+            >
+              <Logo size="lg" />
+            </Link>
           </div>
         </div>
 
@@ -409,7 +419,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
             onClick={() => setSidebarTab('triase')}
             className={`flex-1 py-2.5 text-xs font-semibold transition ${
               sidebarTab === 'triase'
-                ? 'text-[#4B7CB6] border-b-2 border-emerald-600'
+                ? 'text-brand-500 border-b-2 border-brand-500'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -420,7 +430,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
             onClick={() => setSidebarTab('napas')}
             className={`flex-1 py-2.5 text-xs font-semibold transition ${
               sidebarTab === 'napas'
-                ? 'text-teal-700 border-b-2 border-teal-600'
+                ? 'text-brand-700 border-b-2 border-brand-600'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -481,7 +491,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                   <div className="space-y-1.5">
                     {result.nextSteps.map((step, i) => (
                       <div key={i} className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#F4F8EC] text-[10px] font-bold text-[#4B7CB6] mt-0.5">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-surface text-[10px] font-bold text-brand-500 mt-0.5">
                           {i + 1}
                         </span>
                         <span>{step}</span>
@@ -494,13 +504,13 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               {/* Tanda Bahaya */}
               {result.dangerSignsToWatch && result.dangerSignsToWatch.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-bold uppercase text-rose-400 tracking-wide mb-1.5 flex items-center gap-1">
+                  <p className="text-[11px] font-bold uppercase text-danger tracking-wide mb-1.5 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3" /> Tanda Bahaya
                   </p>
-                  <ul className="space-y-1 rounded-xl bg-rose-50 border border-rose-100 p-3 text-xs text-rose-900">
+                  <ul className="space-y-1 rounded-xl bg-danger-soft border border-danger-line p-3 text-xs text-danger-strong">
                     {result.dangerSignsToWatch.map((sign, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-rose-400 shrink-0" />
+                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-danger shrink-0" />
                         {sign}
                       </li>
                     ))}
@@ -510,7 +520,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
 
               {/* Calm Support */}
               {result.calmSupport?.message && (
-                <div className="rounded-xl border border-teal-100 bg-teal-50 p-3 text-xs text-teal-900 flex items-start gap-2">
+                <div className="rounded-xl border border-brand-100 bg-brand-50 p-3 text-xs text-brand-900 flex items-start gap-2">
                   <span className="text-base shrink-0">🌿</span>
                   <p className="leading-relaxed">{result.calmSupport.message}</p>
                 </div>
@@ -518,7 +528,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
 
               {/* Engine info */}
               <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-emerald-500" />
+                <Sparkles className="h-3 w-3 text-brand-500" />
                 {isLiveAI === true
                   ? 'Medivue AI · mode langsung'
                   : isLiveAI === false
@@ -539,7 +549,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
             type="button"
             onClick={handleEndChat}
             disabled={isGeneratingLetter}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#335581] disabled:opacity-50 transition shadow-sm"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-50 transition shadow-sm"
           >
             {isGeneratingLetter ? (
               <><Loader2 className="h-4 w-4 animate-spin" />Menyusun Surat...</>
@@ -574,12 +584,17 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               <ArrowLeft className="h-4 w-4" />
             </Link>
 
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-sm">
+            <Link
+              href="/dashboard"
+              aria-label="Medivue — kembali ke dashboard"
+              title="Kembali ke dashboard"
+              className="flex items-center gap-2.5 min-w-0 rounded-lg transition hover:opacity-80"
+            >
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-500 to-brand-700 text-white shadow-sm">
                 <Bot className="h-5 w-5" />
                 <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F4F8EC]0 border-2 border-white" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success border-2 border-white" />
                 </span>
               </div>
               <div className="min-w-0">
@@ -591,12 +606,12 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 </div>
                 <p className="text-[11px] text-slate-500 truncate">
                   {formData.mainSymptom} • {formData.severity ?? 'sedang'} •{' '}
-                  <span className="text-[#4B7CB6] font-semibold">
+                  <span className="text-brand-500 font-semibold">
                     {isLiveAI === null ? 'Medivue AI' : isLiveAI ? 'AI aktif' : 'Mode pendamping'}
                   </span>
                 </p>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Right: actions */}
@@ -606,7 +621,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               type="button"
               onClick={handleEndChat}
               disabled={isGeneratingLetter}
-              className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-3 py-2 text-xs font-bold text-white hover:bg-[#335581] disabled:opacity-50 transition"
+              className="flex items-center gap-1.5 rounded-xl bg-brand-500 px-3 py-2 text-xs font-bold text-white hover:bg-brand-700 disabled:opacity-50 transition"
             >
               {isGeneratingLetter
                 ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -642,7 +657,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                   <ul className="mt-1.5 space-y-1 text-xs text-slate-700">
                     {result.nextSteps.slice(0, 3).map((step, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#F4F8EC]0" />
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-warning" />
                         {step}
                       </li>
                     ))}
@@ -651,11 +666,11 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               )}
               {result.dangerSignsToWatch && result.dangerSignsToWatch.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Tanda bahaya</p>
-                  <ul className="mt-1.5 space-y-1 text-xs text-rose-900">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-danger">Tanda bahaya</p>
+                  <ul className="mt-1.5 space-y-1 text-xs text-danger-strong">
                     {result.dangerSignsToWatch.slice(0, 3).map((sign, index) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-rose-400" />
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-danger" />
                         {sign}
                       </li>
                     ))}
@@ -668,7 +683,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
 
         {/* Red Flag Alert */}
         {result.isRedFlagTriggered && (
-          <div className="px-4 py-3 bg-rose-50 border-b border-rose-200 shrink-0">
+          <div className="px-4 py-3 bg-danger-soft border-b border-danger-line shrink-0">
             <RedFlagAlert
               reason={result.reasoning}
               actionText={result.nextSteps?.[0] ?? 'Segera ke IGD atau hubungi 119'}
@@ -682,7 +697,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           {/* Session start indicator */}
           <div className="text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-xs">
-              <HeartPulse className="h-3 w-3 text-emerald-600" />
+              <HeartPulse className="h-3 w-3 text-brand-600" />
               Sesi Konsultasi Dimulai
             </span>
           </div>
@@ -697,7 +712,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 {/* Avatar */}
                 <div
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${
-                    isUser ? 'bg-[#4B7CB6]' : 'bg-slate-800'
+                    isUser ? 'bg-brand-500' : 'bg-slate-800'
                   }`}
                 >
                   {isUser ? <UserIcon className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -707,7 +722,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 <div
                   className={`max-w-[80%] sm:max-w-[72%] rounded-2xl px-4 py-3 shadow-xs ${
                     isUser
-                      ? 'bg-[#4B7CB6] text-white rounded-br-sm'
+                      ? 'bg-brand-500 text-white rounded-br-sm'
                       : 'bg-white text-slate-800 border border-slate-200 rounded-bl-sm'
                   }`}
                 >
@@ -715,7 +730,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                     ? <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                     : renderContent(msg.content)
                   }
-                  <p className={`mt-1.5 text-[10px] text-right ${isUser ? 'text-emerald-100' : 'text-slate-400'}`}>
+                  <p className={`mt-1.5 text-[10px] text-right ${isUser ? 'text-brand-100' : 'text-slate-400'}`}>
                     {msg.timestamp}
                   </p>
                 </div>
@@ -730,7 +745,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 <Bot className="h-4 w-4" />
               </div>
               <div className="rounded-2xl rounded-bl-sm bg-white border border-slate-200 shadow-xs px-4 py-3 flex items-center gap-2 text-xs text-slate-500">
-                <Loader2 className="h-4 w-4 animate-spin text-emerald-600 shrink-0" />
+                <Loader2 className="h-4 w-4 animate-spin text-brand-600 shrink-0" />
                 Medivue sedang menyusun jawaban...
               </div>
             </div>
@@ -743,7 +758,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
         <div className="border-t border-slate-200 bg-white px-4 py-2 overflow-x-auto shrink-0">
           <div className="flex items-center gap-2 whitespace-nowrap">
             <span className="text-[11px] font-bold text-slate-400 shrink-0 flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-emerald-500" />
+              <Sparkles className="h-3 w-3 text-brand-500" />
               Tanya cepat:
             </span>
             {SUGGESTED_QUESTIONS.map((q, i) => (
@@ -752,7 +767,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
                 type="button"
                 disabled={isLoading}
                 onClick={() => handleSendMessage(q)}
-                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 hover:border-emerald-300 hover:bg-[#F4F8EC] hover:text-[#335581] disabled:opacity-50 transition"
+                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 hover:border-brand-300 hover:bg-surface hover:text-brand-700 disabled:opacity-50 transition"
               >
                 {q}
               </button>
@@ -773,12 +788,12 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
               onChange={(e) => setInputText(e.target.value)}
               disabled={isLoading}
               placeholder="Tanyakan keluhan Anda (misal: boleh minum es? kapan harus periksa?)..."
-              className="flex-1 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20 disabled:opacity-60 transition"
+              className="flex-1 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:opacity-60 transition"
             />
             <button
               type="submit"
               disabled={isLoading || !inputText.trim()}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#4B7CB6] text-white hover:bg-[#335581] disabled:opacity-40 transition shadow-sm"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-500 text-white hover:bg-brand-700 disabled:opacity-40 transition shadow-sm"
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>

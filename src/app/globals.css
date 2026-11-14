@@ -1,48 +1,120 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  }
+/*
+ * ============================================================
+ * Medivue Design Tokens
+ * ------------------------------------------------------------
+ * Brand  : biru samudera (#4B7CB6 / #335581)
+ * Neutral: skala slate bawaan Tailwind
+ * Semantic: danger (darurat), warning (segera), brand (terjadwal),
+ *           success (pantau di rumah)
+ * ============================================================
+ */
+@theme {
+  /* Brand — biru */
+  --color-brand-50: #f1f6fc;
+  --color-brand-100: #e2edf8;
+  --color-brand-200: #c4daee;
+  --color-brand-300: #9cbee0;
+  --color-brand-400: #6e9bd1;
+  --color-brand-500: #4b7cb6;
+  --color-brand-600: #3e6ba1;
+  --color-brand-700: #335581;
+  --color-brand-800: #294263;
+  --color-brand-900: #1d3350;
+  --color-brand-950: #16273d;
 
+  /* Surface — netral kebiruan, menggantikan krem hijau */
+  --color-surface: #f6f8fb;
+  --color-surface-soft: #fbfcfe;
+  --color-surface-muted: #eef3f9;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+
+  /* Semantic — danger */
+  --color-danger-soft: #fff1f2;
+  --color-danger-line: #fecdd3;
+  --color-danger: #e11d48;
+  --color-danger-strong: #9f1239;
+
+  /* Semantic — warning */
+  --color-warning-soft: #fffbeb;
+  --color-warning-line: #fde68a;
+  --color-warning: #b45309;
+  --color-warning-strong: #78350f;
+
+  /* Semantic — success */
+  --color-success-soft: #f0fdf4;
+  --color-success-line: #bbf7d0;
+  --color-success: #15803d;
+  --color-success-strong: #14532d;
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+@layer base {
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    background: linear-gradient(to bottom, #F4F8EC, #FFFFFF);
-    color: #2C3E50;
+    background: linear-gradient(to bottom, var(--color-surface), #ffffff);
+    color: #334155; /* slate-700 */
     font-family: var(--font-sans);
     text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    background-color: #7FB069;
-    color: #1F3D2B;
+    background-color: var(--color-brand-200);
+    color: var(--color-brand-900);
   }
 
   :focus-visible {
-    outline-color: #4B7CB6;
+    outline-color: var(--color-brand-500);
   }
 }
 
 /* Transisi antar slide/section */
 .section-transition-light {
-  background: linear-gradient(to bottom, #F4F8EC, #FFFFFF);
+  background: linear-gradient(to bottom, var(--color-surface), #ffffff);
 }
 
 .section-transition-white {
-  background: linear-gradient(to bottom, #FFFFFF, #F4F8EC);
+  background: linear-gradient(to bottom, #ffffff, var(--color-surface));
 }
 
 .section-transition-gray {
-  background: linear-gradient(to bottom, #F4F8EC, #FFFFFF);
+  background: linear-gradient(to bottom, var(--color-surface-muted), var(--color-surface));
 }
 
 /* Animasi napas tenang */
+@keyframes calmBreathe {
+  0%,
+  100% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 .animate-breathe {
-  background: linear-gradient(180deg, #4B7CB6 0%, #335581 100%);
+  background: linear-gradient(180deg, var(--color-brand-500) 0%, var(--color-brand-700) 100%);
   animation: calmBreathe 8s ease-in-out infinite;
+}
+
+/* Halaman profil penuh (refresh/direct visit): sembunyikan chrome global.
+   Modal profil yang di-intercept tidak memakai class ini, sehingga chrome
+   halaman sebelumnya tetap terlihat di balik overlay. */
+body:has(.profile-fullscreen) header[data-global-navbar],
+body:has(.profile-fullscreen) footer[data-global-footer],
+body:has(.profile-fullscreen) nav[data-global-bottomnav] {
+  display: none;
+}
+
+body:has(.profile-fullscreen) [data-shell-content] {
+  padding-bottom: 0;
 }
 
 @media print {

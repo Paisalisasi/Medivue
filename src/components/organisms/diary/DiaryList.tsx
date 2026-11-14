@@ -8,9 +8,9 @@ import { AlertCircle, BookHeart, Clock, Plus, Sparkles, TrendingUp } from 'lucid
 const SEVERITY_LABELS = ['Ringan sekali', 'Ringan', 'Sedang', 'Berat', 'Sangat berat'];
 
 function severityTone(value: number) {
-  if (value <= 2) return 'bg-[#F4F8EC] text-[#335581] ring-emerald-200';
-  if (value === 3) return 'bg-amber-50 text-amber-800 ring-amber-200';
-  return 'bg-rose-50 text-rose-800 ring-rose-200';
+  if (value <= 2) return 'bg-surface text-brand-700 ring-brand-200';
+  if (value === 3) return 'bg-warning-soft text-warning-strong ring-warning-line';
+  return 'bg-danger-soft text-danger-strong ring-danger-line';
 }
 
 export default function DiaryList() {
@@ -73,13 +73,13 @@ export default function DiaryList() {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-4 flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#4B7CB6]/10 text-[#335581]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-700">
             <BookHeart className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="text-base font-semibold text-[#335581]">Catat kondisi hari ini</h2>
+            <h2 className="text-base font-semibold text-brand-700">Catat kondisi hari ini</h2>
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Tulis perubahan yang paling terasa, sekecil apa pun.
             </p>
@@ -94,7 +94,7 @@ export default function DiaryList() {
             rows={3}
             maxLength={1000}
             placeholder="Contoh: Kepala masih agak sakit, tapi lebih ringan setelah istirahat."
-            className="w-full resize-y rounded-xl border border-slate-200 bg-[#F4F8EC] p-3.5 text-sm leading-6 text-slate-800 placeholder-slate-400 transition focus:border-[#335581] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4B7CB6]/20"
+            className="w-full resize-y rounded-xl border border-slate-200 bg-surface p-3.5 text-sm leading-6 text-slate-800 placeholder-slate-400 transition focus:border-brand-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           />
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -110,9 +110,9 @@ export default function DiaryList() {
                     aria-label={`Tingkat ${value} dari 5`}
                     aria-pressed={severity === value}
                     onClick={() => setSeverity(value)}
-                    className={`h-9 w-9 rounded-xl text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 ${
+                    className={`h-9 w-9 rounded-xl text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 ${
                       severity === value
-                        ? 'bg-[#4B7CB6] text-white'
+                        ? 'bg-brand-500 text-white'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
@@ -121,7 +121,7 @@ export default function DiaryList() {
                 ))}
               </div>
               <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-slate-500">
-                <Sparkles className="h-3 w-3 text-emerald-600" />
+                <Sparkles className="h-3 w-3 text-brand-600" />
                 {SEVERITY_LABELS[severity - 1]}
               </p>
             </fieldset>
@@ -129,7 +129,7 @@ export default function DiaryList() {
             <button
               type="submit"
               disabled={isSubmitting || !note.trim()}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#4B7CB6] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#335581] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Plus className="h-4 w-4" /> {isSubmitting ? 'Menyimpan…' : 'Simpan catatan'}
             </button>
@@ -138,7 +138,7 @@ export default function DiaryList() {
           {errorMessage && (
             <p
               role="alert"
-              className="flex items-start gap-2 rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-800"
+              className="flex items-start gap-2 rounded-xl bg-danger-soft px-3.5 py-3 text-sm text-danger-strong"
             >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               {errorMessage}
@@ -150,35 +150,35 @@ export default function DiaryList() {
       <section className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[.14em] text-[#4B7CB6]">
+            <p className="text-xs font-bold uppercase tracking-[.14em] text-brand-500">
               Riwayat kamu
             </p>
-            <h2 className="mt-1 text-xl font-semibold tracking-tight text-[#335581]">
+            <h2 className="mt-1 text-xl font-semibold tracking-tight text-brand-700">
               Catatan perkembangan{' '}
               <span className="text-sm font-medium text-slate-500">({entries.length})</span>
             </h2>
           </div>
           {averageSeverity && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#335581] ring-1 ring-emerald-200">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-200">
               <TrendingUp className="h-3.5 w-3.5" /> Rata-rata {averageSeverity}/5
             </span>
           )}
         </div>
 
         {isLoading ? (
-          <div className="rounded-2xl border border-emerald-950/10 bg-white p-6 text-sm text-slate-500">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
             Memuat catatan…
           </div>
         ) : entries.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-emerald-950/20 bg-white px-6 py-10 text-center">
-            <p className="font-semibold text-[#335581]">Belum ada catatan</p>
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center">
+            <p className="font-semibold text-brand-700">Belum ada catatan</p>
             <p className="mt-1 text-sm text-slate-500">Catatan pertamamu akan muncul di sini.</p>
           </div>
         ) : (
           entries.map((entry) => (
             <article
               key={entry.id}
-              className="rounded-2xl border border-emerald-950/10 bg-white p-5"
+              className="rounded-2xl border border-slate-200 bg-white p-5"
             >
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5 text-xs text-slate-500">

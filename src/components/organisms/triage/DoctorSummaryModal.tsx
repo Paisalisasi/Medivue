@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Copy, Check, FileDown, Stethoscope } from 'lucide-react';
+import { X, Copy, Check, Stethoscope } from 'lucide-react';
 
 interface Props {
   doctorSummary: {
@@ -41,7 +41,7 @@ Pertanyaan yang Disiapkan untuk Konsultasi:
       <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2 text-slate-800">
-            <Stethoscope className="h-5 w-5 text-emerald-600" />
+            <Stethoscope className="h-5 w-5 text-brand-600" />
             <h3 className="font-bold text-base">Ringkasan Konsultasi Dokter</h3>
           </div>
           <button
@@ -81,7 +81,7 @@ Pertanyaan yang Disiapkan untuk Konsultasi:
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#335581] transition"
+            className="flex items-center gap-1.5 rounded-xl bg-brand-500 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-brand-700 transition"
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? 'Tersalin ke Clipboard!' : 'Salin Ringkasan'}

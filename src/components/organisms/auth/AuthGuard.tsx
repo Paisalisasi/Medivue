@@ -31,9 +31,9 @@ export default function AuthGuard({ children }: Props) {
 
   if (isLoading || !user) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-[#F4F8EC] px-5">
-        <div className="inline-flex items-center gap-2.5 rounded-2xl border border-[#335581]/10 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
-          <Loader2 className="h-4 w-4 animate-spin text-[#4B7CB6]" aria-hidden="true" />
+      <div className="flex min-h-[60vh] items-center justify-center bg-surface px-5">
+        <div className="inline-flex items-center gap-2.5 rounded-2xl border border-brand-700/10 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-brand-500" aria-hidden="true" />
           Memeriksa sesi...
         </div>
       </div>

@@ -31,14 +31,14 @@ export default function DoctorLetterModal({ letter, onClose }: Props) {
   const getUrgencyBadge = (urgency: string) => {
     switch (urgency) {
       case 'darurat':
-        return 'bg-rose-600 text-white border-rose-700';
+        return 'bg-danger text-white border-danger-strong';
       case 'segera':
-        return 'bg-amber-600 text-white border-amber-700';
+        return 'bg-warning text-white border-warning-strong';
       case 'terjadwal':
-        return 'bg-blue-600 text-white border-blue-700';
+        return 'bg-brand-500 text-white border-brand-700';
       case 'pantau_di_rumah':
       default:
-        return 'bg-[#4B7CB6] text-white border-[#335581]';
+        return 'bg-success text-white border-success-strong';
     }
   };
 
@@ -64,10 +64,10 @@ C. POIN PENTING DARI PERCAKAPAN PASIEN:
 ${letter.chatInsights.map((pt, i) => `${i + 1}. ${pt}`).join('\n')}
 
 D. TINDAKAN MANDIRI YANG SUDAH DILAKUKAN DI RUMAH:
-${letter.homeCareTried.map((hc, i) => `- ${hc}`).join('\n')}
+${letter.homeCareTried.map((hc) => `- ${hc}`).join('\n')}
 
 E. TANDA BAHAYA (RED FLAGS) YANG PERLU DIOBSERVASI:
-${letter.dangerSignsToWatch.map((ds, i) => `! ${ds}`).join('\n')}
+${letter.dangerSignsToWatch.map((ds) => `! ${ds}`).join('\n')}
 
 F. PERTANYAAN PASIEN UNTUK KONSULTASI:
 ${letter.suggestedQuestionsForDoctor.map((q, i) => `${i + 1}. ${q}`).join('\n')}
@@ -107,7 +107,7 @@ ${letter.doctorNoteClosing}
         {/* Modal Top Bar (Hidden saat di-print) */}
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-6 py-3.5 print:hidden">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4B7CB6] text-white shadow-xs">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white shadow-xs">
               <FileText className="h-4 w-4" />
             </div>
             <div>
@@ -133,7 +133,7 @@ ${letter.doctorNoteClosing}
             <button
               type="button"
               onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-[#335581] transition"
+              className="flex items-center gap-1.5 rounded-xl bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-brand-700 transition"
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               <span>{copied ? 'Tersalin!' : 'Salin Teks'}</span>
@@ -156,11 +156,11 @@ ${letter.doctorNoteClosing}
           <div className="border-b-2 border-slate-800 pb-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#4B7CB6] text-white shadow-sm print:border print:border-[#335581]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-sm print:border print:border-brand-700">
                   <HeartPulse className="h-7 w-7" />
                 </div>
                 <div>
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-[#4B7CB6] block">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-brand-500 block">
                     Medivue Clinical Triage
                   </span>
                   <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900">
@@ -222,11 +222,11 @@ ${letter.doctorNoteClosing}
 
           {/* BAGIAN I: IKHTISAR KLINIS NARATIF */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-[#335581] uppercase tracking-wider border-b border-emerald-100 pb-1">
-              <Stethoscope className="h-4 w-4 text-emerald-600" />
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-700 uppercase tracking-wider border-b border-brand-100 pb-1">
+              <Stethoscope className="h-4 w-4 text-brand-600" />
               <span>I. Ikhtisar Klinis Pasien (Clinical Summary)</span>
             </div>
-            <p className="text-xs sm:text-sm leading-relaxed text-slate-700 bg-[#F4F8EC]/30 p-3.5 rounded-xl border border-emerald-100/60 text-justify">
+            <p className="text-xs sm:text-sm leading-relaxed text-slate-700 bg-surface/30 p-3.5 rounded-xl border border-brand-100/60 text-justify">
               {letter.clinicalSummary}
             </p>
           </div>
@@ -240,7 +240,7 @@ ${letter.doctorNoteClosing}
             <ul className="space-y-1.5 pl-2 text-xs sm:text-sm text-slate-700">
               {letter.chatInsights.map((insight, idx) => (
                 <li key={idx} className="flex items-start gap-2">
-                  <span className="font-bold text-emerald-600 shrink-0">•</span>
+                  <span className="font-bold text-brand-600 shrink-0">•</span>
                   <span>{insight}</span>
                 </li>
               ))}
@@ -250,15 +250,15 @@ ${letter.doctorNoteClosing}
           {/* DUA KOLOM: TINDAKAN MANDIRI & TANDA BAHAYA */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Tindakan Mandiri */}
-            <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-3.5 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900 uppercase">
-                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+            <div className="rounded-xl border border-brand-200 bg-brand-50/40 p-3.5 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-brand-900 uppercase">
+                <CheckCircle2 className="h-4 w-4 text-success" />
                 <span>Upaya Mandiri di Rumah</span>
               </div>
-              <ul className="text-xs text-blue-950 space-y-1">
+              <ul className="text-xs text-brand-950 space-y-1">
                 {letter.homeCareTried.map((care, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
-                    <span className="text-blue-500">✓</span>
+                    <span className="text-brand-500">✓</span>
                     <span>{care}</span>
                   </li>
                 ))}
@@ -266,15 +266,15 @@ ${letter.doctorNoteClosing}
             </div>
 
             {/* Tanda Bahaya Yang Diamati */}
-            <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-3.5 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase">
-                <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <div className="rounded-xl border border-warning-line bg-warning-soft/40 p-3.5 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-warning-strong uppercase">
+                <AlertTriangle className="h-4 w-4 text-warning" />
                 <span>Tanda Bahaya yang Diobservasi</span>
               </div>
-              <ul className="text-xs text-amber-950 space-y-1">
+              <ul className="text-xs text-warning-strong space-y-1">
                 {letter.dangerSignsToWatch.map((danger, idx) => (
                   <li key={idx} className="flex items-start gap-1.5">
-                    <span className="text-amber-600 font-bold">!</span>
+                    <span className="text-warning font-bold">!</span>
                     <span>{danger}</span>
                   </li>
                 ))}
@@ -284,8 +284,8 @@ ${letter.doctorNoteClosing}
 
           {/* BAGIAN III: REKOMENDASI PERTANYAAN PASIEN KE DOKTER */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-purple-900 uppercase tracking-wider border-b border-purple-100 pb-1">
-              <HelpCircle className="h-4 w-4 text-purple-600" />
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-900 uppercase tracking-wider border-b border-brand-100 pb-1">
+              <HelpCircle className="h-4 w-4 text-brand-600" />
               <span>III. Pertanyaan Terarah Pasien untuk Konsultasi Tatap Muka</span>
             </div>
             <p className="text-[11px] text-slate-500">
@@ -325,7 +325,7 @@ ${letter.doctorNoteClosing}
             <button
               type="button"
               onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-[#F4F8EC] px-4 py-2 text-xs font-bold text-[#335581] hover:bg-[#F4F8EC] transition"
+              className="flex items-center gap-1.5 rounded-xl border border-brand-300 bg-surface px-4 py-2 text-xs font-bold text-brand-700 hover:bg-surface transition"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               <span>{copied ? 'Tersalin ke Clipboard!' : 'Salin Seluruh Surat'}</span>
@@ -334,7 +334,7 @@ ${letter.doctorNoteClosing}
             <button
               type="button"
               onClick={handleSaveAndDashboard}
-              className="flex items-center gap-1.5 rounded-xl bg-[#4B7CB6] px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#335581] transition"
+              className="flex items-center gap-1.5 rounded-xl bg-brand-500 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-brand-700 transition"
             >
               <LayoutDashboard className="h-4 w-4" />
               <span>Simpan & Selesai</span>

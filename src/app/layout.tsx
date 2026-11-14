@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import ShellLayout from '@/components/layout/ShellLayout';
+import ShellLayout from '@/components/templates/ShellLayout';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
@@ -24,14 +24,19 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html lang="id">
-      <body className="flex min-h-screen flex-col bg-[#F4F8EC] text-slate-900 antialiased selection:bg-[#7FB069] selection:text-[#1F3D2B]">
+      <body className="flex min-h-screen flex-col bg-surface text-slate-900 antialiased selection:bg-brand-200 selection:text-brand-900">
         <AuthProvider>
-          <ShellLayout>{children}</ShellLayout>
+          <ShellLayout>
+            {children}
+            {modal}
+          </ShellLayout>
         </AuthProvider>
       </body>
     </html>

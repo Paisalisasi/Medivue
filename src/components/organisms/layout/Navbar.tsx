@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Logo from '@/components/brand/Logo';
+import Logo from '@/components/atoms/brand/Logo';
 import { useAuth } from '@/hooks/useAuth';
 import {
   BookHeart,
@@ -10,7 +10,7 @@ import {
   LayoutDashboard,
   LogIn,
   LogOut,
-  PhoneCall,
+  UserRound,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -26,7 +26,7 @@ export default function Navbar() {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white">
+    <header data-global-navbar className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8 md:h-[4.25rem]">
         <Link href="/" aria-label="Medivue beranda" className="shrink-0">
           <span className="md:hidden">
@@ -45,8 +45,8 @@ export default function Navbar() {
                 href={href}
                 className={`inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition ${
                   isActive(href)
-                    ? 'border-[#4B7CB6] text-[#335581]'
-                    : 'border-transparent text-slate-700 hover:border-[#4B7CB6]/40 hover:text-[#335581]'
+                    ? 'border-brand-500 text-brand-700'
+                    : 'border-transparent text-slate-700 hover:border-brand-500/40 hover:text-brand-700'
                 }`}
               >
                 {Icon && <Icon className="h-4 w-4" />}
@@ -57,43 +57,37 @@ export default function Navbar() {
         )}
 
         <div className="flex items-center gap-2">
-          {/* Aksi darurat tetap terjangkau di top bar mobile */}
-          <a
-            href="tel:119"
-            aria-label="Hubungi darurat 119"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 md:hidden"
-          >
-            <PhoneCall className="h-3.5 w-3.5" />
-            119
-          </a>
-
           {/* Tombol masuk mobile khusus tamu di landing page */}
           {!isLoading && !user && pathname === '/' && (
             <Link
               href="/auth"
-              className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-[#F4F8EC]/40 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#335581]/20 hover:text-[#335581] md:hidden"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-700/20 hover:text-brand-700 md:hidden"
             >
               <LogIn className="h-3.5 w-3.5" aria-hidden="true" />
               Masuk
             </Link>
           )}
 
-          {/* Shortcut dashboard di mobile saat sudah login */}
+          {/* Tombol profil mobile: ikon akun yang jelas mengarah ke /profile */}
           {!isLoading && user && (
             <Link
-              href="/dashboard"
-              aria-label="Buka dashboard"
-              title="Buka dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#4B7CB6] text-sm font-bold text-white transition hover:bg-[#335581] md:hidden"
+              href="/profile"
+              aria-label="Buka profil saya"
+              title="Profil saya"
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition md:hidden ${
+                isActive('/profile')
+                  ? 'border-brand-500 bg-brand-50 text-brand-700'
+                  : 'border-line bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700'
+              }`}
             >
-              {(user.email?.[0] ?? 'M').toUpperCase()}
+              <UserRound className="h-4 w-4" aria-hidden="true" />
             </Link>
           )}
 
-          {!pathname?.startsWith('/checkin') && (
+          {!pathname?.startsWith('/checkin') && pathname !== '/' && (
             <Link
               href="/checkin"
-              className="hidden min-h-11 items-center gap-2 rounded-full bg-[#4B7CB6] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#335581] md:inline-flex"
+              className="hidden min-h-11 items-center gap-2 rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 md:inline-flex"
             >
               Cek gejala
               <ArrowRight className="h-4 w-4" />
@@ -102,12 +96,19 @@ export default function Navbar() {
 
           {!isLoading && (user ? (
             <div className="hidden items-center gap-2 md:flex">
-              <span
+              <Link
+                href="/profile"
                 title={user.email ?? 'Akun Medivue'}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#4B7CB6] text-sm font-bold text-white"
+                aria-label="Buka profil saya"
+                className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition ${
+                  isActive('/profile')
+                    ? 'border-brand-500 bg-brand-50 text-brand-700'
+                    : 'border-line bg-white text-slate-700 hover:border-brand-300 hover:bg-surface hover:text-brand-700'
+                }`}
               >
-                {(user.email?.[0] ?? 'M').toUpperCase()}
-              </span>
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+                Profil
+              </Link>
               <button
                 type="button"
                 onClick={() => signOut()}
@@ -121,7 +122,7 @@ export default function Navbar() {
           ) : (!pathname?.startsWith('/checkin') && (
             <Link
               href="/auth"
-              className="hidden min-h-10 items-center gap-2 rounded-xl border border-[#F4F8EC]/40 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-[#335581]/20 hover:text-[#335581] md:inline-flex"
+              className="hidden min-h-10 items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-700/20 hover:text-brand-700 md:inline-flex"
             >
               <LogIn className="h-4 w-4" />
               Masuk

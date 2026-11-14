@@ -75,6 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password: pass,
+        options: {
+          data: {
+            // Nama awal mengikuti prefix email; pengguna bisa menggantinya
+            // lewat halaman profil.
+            display_name: email.split('@')[0],
+          },
+        },
       });
 
       if (error) return { error: new Error(error.message), session: null, user: null };

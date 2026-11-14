@@ -56,6 +56,92 @@ export function saveSessions<T>(userId: string | null | undefined, sessions: T[]
   writeArray(getSessionStorageKey(userId), sessions);
 }
 
+const CHECKIN_DRAFT_KEY = 'medivue_checkin_draft';
+
+export interface CheckinDraft {
+  stage: 'intro' | 'questions' | 'review';
+  stepIndex: number;
+  // Disimpan sebagai unknown agar tidak ada dependensi tipe sirkular di runtime.
+  formData: unknown;
+}
+
+function readJson(key: string): unknown | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function writeJson(key: string, value: unknown) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Penyimpanan penuh atau diblokir: abaikan agar alur tetap berjalan.
+  }
+}
+
+function isValidDraft(value: unknown): value is CheckinDraft {
+  if (!value || typeof value !== 'object') return false;
+  const draft = value as Record<string, unknown>;
+  const stage = draft.stage;
+  const stepIndex = draft.stepIndex;
+  return (
+    (stage === 'intro' || stage === 'questions' || stage === 'review') &&
+    typeof stepIndex === 'number' &&
+    Number.isInteger(stepIndex) &&
+    stepIndex >= 0 &&
+    stepIndex <= 4 &&
+    Boolean(draft.formData && typeof draft.formData === 'object')
+  );
+}
+
+export function saveCheckinDraft(draft: CheckinDraft) {
+  writeJson(CHECKIN_DRAFT_KEY, draft);
+}
+
+export function readCheckinDraft(): CheckinDraft | null {
+  const parsed = readJson(CHECKIN_DRAFT_KEY);
+  return isValidDraft(parsed) ? parsed : null;
+}
+
+export function clearCheckinDraft() {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(CHECKIN_DRAFT_KEY);
+  } catch {
+    // Abaikan agar alur tetap berjalan.
+  }
+}
+
+const PROFILE_CACHE_PREFIX = 'medivue_profile_';
+
+export function getProfileCacheKey(userId?: string | null) {
+  return `${PROFILE_CACHE_PREFIX}${userId || 'guest'}`;
+}
+
+export function readProfileCache<T>(userId?: string | null): T | null {
+  const parsed = readJson(getProfileCacheKey(userId));
+  return (parsed ?? null) as T | null;
+}
+
+export function saveProfileCache<T>(userId: string | null | undefined, profile: T) {
+  writeJson(getProfileCacheKey(userId), profile);
+}
+
+export function clearProfileCache(userId?: string | null) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(getProfileCacheKey(userId));
+  } catch {
+    // Abaikan agar alur tetap berjalan.
+  }
+}
+
 export function readLetters<T>(): T[] {
   const current = readArray<T>(LETTERS_KEY);
   if (current) return current;

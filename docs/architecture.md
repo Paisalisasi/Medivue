@@ -82,36 +82,38 @@ Medivue/
 │   └── icons.svg
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx             # Root layout: metadata, AuthProvider, ShellLayout
+│   │   ├── layout.tsx             # Root layout: metadata, AuthProvider, ShellLayout, slot @modal
 │   │   ├── globals.css            # Tailwind v4, base style, animasi napas, print
 │   │   ├── page.tsx               # Landing page
 │   │   ├── auth/page.tsx          # Login & registrasi
 │   │   ├── checkin/page.tsx       # Entry alur cek gejala (fullscreen)
 │   │   ├── dashboard/page.tsx     # Ringkasan riwayat & surat tersimpan
 │   │   ├── diary/page.tsx         # Symptom diary
+│   │   ├── profile/page.tsx       # Profil penuh (akses langsung / refresh)
+│   │   ├── @modal/
+│   │   │   ├── default.tsx
+│   │   │   └── (.)profile/page.tsx  # Profil sebagai glass modal di atas halaman terakhir
 │   │   └── api/
 │   │       ├── triage/route.ts
 │   │       ├── chat/route.ts
 │   │       ├── chat/letter/route.ts
 │   │       └── diary/route.ts
-│   ├── components/
-│   │   ├── auth/AuthGuard.tsx
-│   │   ├── brand/Logo.tsx
-│   │   ├── calm/BreathingExercise.tsx
-│   │   ├── diary/DiaryList.tsx
-│   │   ├── layout/{ShellLayout,Navbar,Footer,DisclaimerBanner,BottomNav}.tsx
-│   │   └── triage/
-│   │       ├── StepChat.tsx
-│   │       ├── InteractiveAiChat.tsx
-│   │       ├── TriageResultCard.tsx   # Ada, tetapi belum diimpor halaman mana pun
-│   │       ├── RedFlagAlert.tsx
-│   │       ├── AnxietySlider.tsx
-│   │       ├── DoctorSummaryModal.tsx
-│   │       └── DoctorLetterModal.tsx
+│   ├── components/                # Atomic design (lihat src/components/README.md)
+│   │   ├── atoms/brand/Logo.tsx
+│   │   ├── molecules/triage/{AnxietySlider,RedFlagAlert}.tsx
+│   │   ├── organisms/
+│   │   │   ├── auth/AuthGuard.tsx
+│   │   │   ├── calm/{BreathingExercise,BreathingModal}.tsx
+│   │   │   ├── diary/DiaryList.tsx
+│   │   │   ├── layout/{Navbar,Footer,BottomNav}.tsx
+│   │   │   ├── profile/ProfilePanel.tsx  # Panel profil dipakai halaman penuh & glass modal
+│   │   │   ├── triage/{StepChat,InteractiveAiChat,TriageResultCard,DoctorSummaryModal,DoctorLetterModal}.tsx
+│   │   │   └── ui/FAB.tsx         # Tombol global "Catatan penting"
+│   │   └── templates/ShellLayout.tsx
 │   ├── contexts/AuthContext.tsx
 │   ├── lib/
 │   │   ├── urgency.ts             # Sumber tunggal metadata 4 level urgensi
-│   │   ├── storage.ts             # localStorage + migrasi prefix lama
+│   │   ├── storage.ts             # localStorage + migrasi prefix lama, draft check-in, cache profil
 │   │   ├── rules/{redFlags,safetyLayer}.ts
 │   │   ├── gemini/{client,config,models,prompts,schemas}.ts
 │   │   ├── supabase/{client,server}.ts
@@ -136,12 +138,15 @@ Alias import: `@/*` → `./src/*` (lihat `tsconfig.json`).
 | `/auth/forgot` | `src/app/auth/forgot/page.tsx` | Client | Publik | Minta tautan reset kata sandi ke email |
 | `/auth/reset` | `src/app/auth/reset/page.tsx` | Client | Publik (butuh sesi recovery) | Set kata sandi baru dari tautan reset |
 | `/checkin` | `src/app/checkin/page.tsx` | Server entry + `StepChat` client | Publik (guest-first) | Alur 5 pertanyaan, review, panggil `/api/triage`, lanjut ke AI chat |
-| `/dashboard` | `src/app/dashboard/page.tsx` | Client | **Wajib login** (`AuthGuard`) | Sapaan, kartu kategori beraksi seragam, sesi terakhir, sebaran urgensi, breathing, surat tersimpan; tanpa Footer global |
+| `/dashboard` | `src/app/dashboard/page.tsx` | Client | **Wajib login** (`AuthGuard`) | Sapaan, ringkasan aksi (2 kolom di mobile), carousel autoplay drag-follow riwayat pengecekan, sebaran urgensi di bawah "Tenangkan diri", latihan napas berupa popup, surat tersimpan; tanpa Footer global |
 | `/diary` | `src/app/diary/page.tsx` | Server entry + `DiaryList` client | **Wajib login** (`AuthGuard`) | Catat dan lihat perkembangan gejala harian |
+| `/profile` | `src/app/profile/page.tsx` + `src/app/@modal/(.)profile/page.tsx` | Server wrapper + client `ProfilePanel` | **Wajib login** (`AuthGuard`) | Profil akun, kesehatan & preferensi AI; navigasi client membuka glass modal di atas halaman terakhir, akses langsung/refresh memakai halaman penuh tanpa Navbar/Footer/BottomNav |
 
-`ShellLayout` menyembunyikan Navbar/Footer/Disclaimer untuk route **`/checkin`** agar alur terasa fokus (fullscreen). Route lain memakai shell global. Khusus **`/dashboard`**, Footer global tidak dirender agar halaman terasa seperti ruang kerja pribadi; Navbar, DisclaimerBanner, dan BottomNav tetap tampil.
+`ShellLayout` merender `Navbar` dan `Footer` secara global (Footer disembunyikan di **`/dashboard`** agar terasa seperti ruang kerja pribadi). Peringatan batas medis tidak lagi berupa banner di atas halaman, melainkan tombol mengambang **`FAB`** ("Catatan penting") di pojok kanan bawah yang tampil di semua halaman; saat ditekan, catatan tampil sebagai **popup di tengah layar** dengan backdrop blur. Di mobile posisinya naik di atas `BottomNav` bila nav tampil, dan menempel rapat ke sudut saat nav tidak ada (mis. beranda).
 
-Pada viewport mobile (`< md`), navigasi utama dipindahkan ke **`BottomNav`** (fixed di bawah) dengan bubble indikator halaman aktif yang bergeser. `BottomNav` hanya dirender jika **pengguna sudah login** dan **tidak berada di landing page (`/`)**; route fullscreen `/checkin` juga tidak menampilkannya. Top bar mobile tetap ada dalam versi slim (logo + tautan darurat 119 + avatar/shortcut dashboard saat login), sedangkan navigasi desktop tetap di `Navbar`. `ShellLayout` menambahkan padding bawah setinggi bottom nav + safe area hanya saat nav tampil agar konten dan footer tidak tertutup.
+Pada viewport mobile (`< md`), navigasi utama dipindahkan ke **`BottomNav`** berupa pill melayang berbahan kaca (`bg-white/55` + `backdrop-blur-2xl`). Halaman aktif ditandai **lingkaran liquid glass** di belakang ikon tab (bukan bubble yang bergeser). Tabnya: **Dashboard**, **Cek**, dan **Diary**; ikon tab Cek memakai `public/favicon.svg` di dalam FAB bulat kaca. Akun/profil tidak lagi punya tab di bottom nav — aksesnya lewat ikon profil di Navbar atas. Profil dibuka sebagai **glass modal** melalui intercepting route `@modal/(.)profile`, sehingga halaman terakhir tetap terlihat blur di belakangnya dan scroll halaman tersebut dikunci selama modal terbuka. `BottomNav` hanya dirender jika **pengguna sudah login** dan **tidak berada di landing page (`/`)**. Top bar mobile tetap ada dalam versi slim (logo + tombol profil saat login / Masuk untuk tamu), sedangkan navigasi desktop tetap di `Navbar`. `ShellLayout` menambahkan padding bawah setinggi bottom nav mengambang + safe area hanya saat nav tampil agar konten dan footer tidak tertutup.
+
+Saat sesi tanya jawab AI (`InteractiveAiChat`) aktif di `/checkin`, komponen tersebut mengirim event `medivue:ai-chat` sehingga `ShellLayout` menyembunyikan Navbar/Footer/BottomNav dan `FAB` bergeser ke posisi kompak di atas bar tanya cepat + tombol kirim.
 
 Metadata halaman:
 

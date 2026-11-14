@@ -27,13 +27,17 @@ Medivue 🌿 — AI Health Triage Companion
 KesehatanKu/
 ├── src/
 │   ├── app/                               # FRONTEND PAGES & BACKEND API ROUTES
-│   │   ├── layout.tsx                     # Root layout, Navbar, DisclaimerBanner, Footer
+│   │   ├── layout.tsx                     # Root layout, Navbar, Footer
 │   │   ├── globals.css                    # Tailwind CSS v4 styling & animasi napas
 │   │   ├── page.tsx                       # Landing page & pengenalan 4 level urgensi
 │   │   ├── checkin/
 │   │   │   └── page.tsx                   # Alur Check-in Gejala bertahap
 │   │   ├── diary/
 │   │   │   └── page.tsx                   # Halaman Symptom Diary & pemantauan
+│   │   ├── profile/
+│   │   │   └── page.tsx                   # Halaman User Profil & preferensi AI
+│   │   ├── @modal/
+│   │   │   └── (.)profile/page.tsx        # Profil sebagai glass modal di atas halaman terakhir
 │   │   └── api/                           # BACKEND SERVER-SIDE ROUTE HANDLERS
 │   │       ├── triage/
 │   │       │   └── route.ts               # POST: Red Flag Rule -> Gemini AI -> Safety Layer
@@ -41,21 +45,31 @@ KesehatanKu/
 │   │       │   └── route.ts               # GET: Pertanyaan bertahap (symptom step flow)
 │   │       └── diary/
 │   │           └── route.ts               # GET/POST: Pencatatan gejala harian
-│   ├── components/                        # REUSABLE UI COMPONENTS
-│   │   ├── layout/
-│   │   │   ├── Navbar.tsx                 # Header navigasi & status mode tamu
-│   │   │   ├── DisclaimerBanner.tsx       # Banner peringatan batas medis
-│   │   │   └── Footer.tsx                 # Footer kontak darurat 119 & catatan etika
-│   │   ├── triage/
-│   │   │   ├── StepChat.tsx               # Komponen chat bertahap interaktif
-│   │   │   ├── TriageResultCard.tsx       # Kartu hasil 4 level urgensi lengkap
-│   │   │   ├── RedFlagAlert.tsx           # Peringatan darurat langsung (cut-off alur)
-│   │   │   ├── DoctorSummaryModal.tsx     # Ringkasan siap salin + 3 pertanyaan dokter
-│   │   │   └── AnxietySlider.tsx          # Skala kecemasan 1-5 sebelum & sesudah
-│   │   ├── calm/
-│   │   │   └── BreathingExercise.tsx      # Latihan napas 4-4-6 interaktif
-│   │   └── diary/
-│   │       └── DiaryList.tsx              # Riwayat dan input catatan perkembangan
+│   ├── components/                        # ATOMIC DESIGN (lihat src/components/README.md)
+│   │   ├── atoms/
+│   │   │   └── brand/Logo.tsx
+│   │   ├── molecules/
+│   │   │   └── triage/
+│   │   │       ├── AnxietySlider.tsx      # Skala kecemasan 1-5
+│   │   │       └── RedFlagAlert.tsx       # Peringatan darurat langsung
+│   │   ├── organisms/
+│   │   │   ├── auth/AuthGuard.tsx
+│   │   │   ├── calm/BreathingExercise.tsx # Latihan napas 4-4-6 interaktif
+│   │   │   ├── calm/BreathingModal.tsx    # Popup latihan napas dari dashboard
+│   │   │   ├── diary/DiaryList.tsx        # Riwayat & input catatan perkembangan
+│   │   │   ├── layout/
+│   │   │   │   ├── Navbar.tsx             # Header navigasi & status mode tamu
+│   │   │   │   ├── Footer.tsx             # Footer kontak darurat 119 & catatan etika
+│   │   │   │   └── BottomNav.tsx          # Navigasi bawah mobile (floating glass pill)
+│   │   │   ├── profile/ProfilePanel.tsx   # Panel profil untuk halaman penuh & glass modal
+│   │   │   ├── triage/
+│   │   │   │   ├── StepChat.tsx           # Alur chat bertahap interaktif
+│   │   │   │   ├── InteractiveAiChat.tsx  # Ruang tanya jawab AI
+│   │   │   │   ├── TriageResultCard.tsx   # Kartu hasil 4 level urgensi
+│   │   │   │   ├── DoctorSummaryModal.tsx # Ringkasan siap salin + 3 pertanyaan dokter
+│   │   │   │   └── DoctorLetterModal.tsx  # Surat keterangan dokter
+│   │   │   └── ui/FAB.tsx                 # Tombol global + popup "Catatan penting"
+│   │   └── templates/ShellLayout.tsx      # Kerangka Navbar/Footer/BottomNav/FAB
 │   ├── lib/                               # LOGIKA BISNIS & INTEGRASI
 │   │   ├── rules/
 │   │   │   ├── redFlags.ts                # Rule-based detector tanda bahaya deterministik

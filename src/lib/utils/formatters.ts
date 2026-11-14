@@ -18,13 +18,13 @@ export function formatDateIndo(dateStr: string): string {
 export function formatUrgencyBadge(level: string): { label: string; color: string } {
   switch (level) {
     case 'darurat':
-      return { label: 'Darurat (IGD / 119)', color: 'bg-rose-600 text-white' };
+      return { label: 'Darurat (IGD / 119)', color: 'bg-danger text-white' };
     case 'segera':
-      return { label: 'Periksa dalam 24 Jam', color: 'bg-amber-600 text-white' };
+      return { label: 'Periksa dalam 24 Jam', color: 'bg-warning text-white' };
     case 'terjadwal':
-      return { label: 'Jadwalkan Konsultasi', color: 'bg-blue-600 text-white' };
+      return { label: 'Jadwalkan Konsultasi', color: 'bg-brand-500 text-white' };
     case 'pantau_di_rumah':
     default:
-      return { label: 'Pantau di Rumah', color: 'bg-[#4B7CB6] text-white' };
+      return { label: 'Pantau di Rumah', color: 'bg-success text-white' };
   }
 }

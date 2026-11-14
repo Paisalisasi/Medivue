@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { TriageResult, UrgencyLevel } from '@/types/triage';
+import type { TriageResult } from '@/types/triage';
 import { URGENCY_META } from '@/lib/urgency';
 import { 
   AlertTriangle, 
@@ -28,13 +28,13 @@ export default function TriageResultCard({ result }: Props) {
   const getUrgencyIcon = () => {
     switch (result.urgencyLevel) {
       case 'darurat':
-        return <ShieldAlert className="h-6 w-6 text-rose-600" />;
+        return <ShieldAlert className="h-6 w-6 text-danger" />;
       case 'segera':
-        return <AlertTriangle className="h-6 w-6 text-amber-600" />;
+        return <AlertTriangle className="h-6 w-6 text-warning" />;
       case 'terjadwal':
-        return <CalendarCheck className="h-6 w-6 text-blue-600" />;
+        return <CalendarCheck className="h-6 w-6 text-brand-600" />;
       case 'pantau_di_rumah':
-        return <Home className="h-6 w-6 text-emerald-600" />;
+        return <Home className="h-6 w-6 text-success" />;
     }
   };
 
@@ -62,7 +62,7 @@ export default function TriageResultCard({ result }: Props) {
             onClick={() => setShowDoctorModal(true)}
             className="flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-xs"
           >
-            <FileText className="h-4 w-4 text-emerald-600" />
+            <FileText className="h-4 w-4 text-brand-600" />
             <span>Ringkasan untuk Dokter</span>
           </button>
         </div>
@@ -89,13 +89,13 @@ export default function TriageResultCard({ result }: Props) {
         {/* 2. Kemungkinan Paling Umum (Kelaziman, bukan penyakit seram) */}
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-emerald-500" />
+            <Sparkles className="h-4 w-4 text-brand-500" />
             Kemungkinan Penyebab Paling Lazim
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {result.commonCauses?.map((cause, idx) => (
-              <div key={idx} className="flex items-start gap-2 rounded-lg bg-[#F4F8EC]/50 p-2.5 text-xs text-[#335581] border border-emerald-100">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+              <div key={idx} className="flex items-start gap-2 rounded-lg bg-surface/50 p-2.5 text-xs text-brand-700 border border-brand-100">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-success mt-0.5" />
                 <span>{cause}</span>
               </div>
             ))}
@@ -105,14 +105,14 @@ export default function TriageResultCard({ result }: Props) {
         {/* 3. Tanda Bahaya (Kapan Harus Naik Level) */}
         {result.dangerSignsToWatch?.length > 0 && (
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-rose-500 mb-2 flex items-center gap-1.5">
-              <AlertTriangle className="h-4 w-4 text-rose-500" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-danger mb-2 flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-danger" />
               Tanda Bahaya: Kapan Harus Segera ke Faskes?
             </h3>
-            <ul className="space-y-1.5 rounded-xl bg-rose-50/40 p-3.5 border border-rose-100 text-xs text-rose-950">
+            <ul className="space-y-1.5 rounded-xl bg-danger-soft/40 p-3.5 border border-danger-line text-xs text-danger-strong">
               {result.dangerSignsToWatch.map((sign, idx) => (
                 <li key={idx} className="flex items-start gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-danger mt-1.5 shrink-0" />
                   <span>{sign}</span>
                 </li>
               ))}
@@ -129,7 +129,7 @@ export default function TriageResultCard({ result }: Props) {
           <div className="space-y-2">
             {result.nextSteps?.map((step, idx) => (
               <div key={idx} className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-white p-3 text-xs sm:text-sm text-slate-700">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#F4F8EC] text-[10px] font-bold text-[#4B7CB6]">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface text-[10px] font-bold text-brand-500">
                   {idx + 1}
                 </span>
                 <span>{step}</span>
@@ -140,7 +140,7 @@ export default function TriageResultCard({ result }: Props) {
 
         {/* 5. Calm Support Reassurance Message */}
         {result.calmSupport?.message && (
-          <div className="rounded-xl border border-teal-100 bg-teal-50/60 p-4 text-xs text-teal-900 flex items-start gap-3">
+          <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-4 text-xs text-brand-900 flex items-start gap-3">
             <span className="text-xl">🌿</span>
             <div>
               <span className="font-semibold block mb-0.5">Catatan Penenang:</span>

@@ -19,7 +19,7 @@ export default function Logo({ size = 'md', className = '', inverted = false }: 
     <img
       src="/logo.svg"
       alt="Medivue"
-      className={`${LOGO_HEIGHT[size]} w-auto ${inverted ? 'invert' : ''} ${className}`}
+      className={`${LOGO_HEIGHT[size]} w-auto ${inverted ? 'brightness-0 invert' : ''} ${className}`}
     />
   );
 }

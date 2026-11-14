@@ -1,5 +1,5 @@
 import React from 'react';
-import StepChat from '@/components/triage/StepChat';
+import StepChat from '@/components/organisms/triage/StepChat';
 
 // Metadata halaman di file server component; aturan fast-refresh tidak relevan.
 // eslint-disable-next-line react-refresh/only-export-components

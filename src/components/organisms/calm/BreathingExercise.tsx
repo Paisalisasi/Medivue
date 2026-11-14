@@ -41,10 +41,10 @@ export default function BreathingExercise() {
 
   const phaseColor =
     phase === 'tarik'
-      ? 'bg-[#F4F8EC]0 scale-125'
+      ? 'bg-brand-400 scale-125'
       : phase === 'tahan'
-        ? 'bg-teal-500 scale-125'
-        : 'bg-sky-400 scale-100';
+        ? 'bg-brand-500 scale-125'
+        : 'bg-brand-400 scale-100';
 
   const reset = () => {
     setPhase('tarik');
@@ -52,8 +52,8 @@ export default function BreathingExercise() {
   };
 
   return (
-      <div className="rounded-2xl border border-[#F4F8EC]/40 bg-gradient-to-b from-[#F4F8EC]/70 to-[#F4F8EC]/40 p-6 text-center">
-      <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-[#335581]">
+      <div className="rounded-2xl border border-line bg-gradient-to-b from-surface/70 to-surface/40 p-6 text-center">
+      <div className="mb-2 flex items-center justify-center gap-2 text-sm font-semibold text-brand-700">
         <Wind className="h-4 w-4" />
         <span>Latihan napas sejenak</span>
       </div>
@@ -64,12 +64,12 @@ export default function BreathingExercise() {
       <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
         <div
           className={`absolute h-36 w-36 rounded-full opacity-20 transition-all duration-1000 ease-in-out ${
-            isActive ? phaseColor : 'bg-[#4B7CB6] scale-100'
+            isActive ? phaseColor : 'bg-brand-500 scale-100'
           }`}
         />
         <div
           className={`flex h-28 w-28 flex-col items-center justify-center rounded-full text-white shadow-md transition-all duration-1000 ease-in-out ${
-            isActive ? phaseColor : 'bg-[#4B7CB6] scale-100'
+            isActive ? phaseColor : 'bg-brand-500 scale-100'
           }`}
         >
           <span className="text-xs font-medium uppercase tracking-wider">
@@ -87,7 +87,7 @@ export default function BreathingExercise() {
         <button
           type="button"
           onClick={() => setIsActive(!isActive)}
-          className="flex items-center gap-1.5 rounded-full bg-[#4B7CB6] px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#335581]"
+          className="flex items-center gap-1.5 rounded-full bg-brand-500 px-5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-700"
         >
           {isActive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
           {isActive ? 'Jeda' : 'Mulai latihan'}
