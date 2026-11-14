@@ -19,7 +19,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
-  Wind,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { URGENCY_META, URGENCY_ORDER } from '@/lib/urgency';
@@ -209,36 +208,14 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ============================ CALM SUPPORT (Slide 4) ============================ */}
-      <section className="bg-gradient-to-b from-brand-700 to-brand-900 py-20 text-white">
-        <div className="mx-auto max-w-6xl px-5 flex flex-col lg:flex-row items-center gap-12">
-          <div className="w-full text-center lg:w-2/3 lg:text-left">
-             <h2 className="text-3xl font-bold mb-6">Cemas itu wajar. Kamu tidak menebak sendirian.</h2>
-             <p className="mx-auto max-w-xl text-white/80 leading-relaxed mb-8 lg:mx-0">
-               Medivue dirancang untuk mengurangi overthinking dengan menampilkan kemungkinan paling lazim dan latihan napas saat pikiran mulai penuh.
-             </p>
-             <Link href="/checkin" className="inline-flex items-center gap-2 bg-white px-8 py-3 rounded-full font-bold text-brand-700 transition hover:bg-brand-100">
-               Cek gejala sekarang
-             </Link>
+          <div className="mt-14 border-t border-brand-700/10 pt-10 sm:mt-16 sm:pt-12">
+            <h2 className="text-3xl font-bold text-brand-700 mb-4">Mulai dari yang kamu rasakan hari ini.</h2>
+            <p className="text-slate-600 mb-8">Lima pertanyaan singkat untuk membantu memutuskan langkah berikutnya.</p>
+            <Link href="/checkin" className="bg-brand-700 text-white px-10 py-4 rounded-full font-bold shadow-xl transition hover:scale-105">
+              Mulai sekarang
+            </Link>
           </div>
-          <div className="relative h-64 w-64 flex items-center justify-center">
-             <div className="animate-breathe absolute inset-0 rounded-full opacity-20" />
-             <Wind className="h-12 w-12 text-brand-100" />
-          </div>
-        </div>
-      </section>
-
-      {/* ============================= FINAL CTA ============================= */}
-      <section className="bg-surface py-16 text-center">
-        <div className="mx-auto max-w-2xl px-5">
-           <h2 className="text-3xl font-bold text-brand-700 mb-4">Mulai dari yang kamu rasakan hari ini.</h2>
-           <p className="text-slate-600 mb-8">Lima pertanyaan singkat untuk membantu memutuskan langkah berikutnya.</p>
-           <Link href="/checkin" className="bg-brand-700 text-white px-10 py-4 rounded-full font-bold shadow-xl transition hover:scale-105">
-             Mulai sekarang
-           </Link>
         </div>
       </section>
     </div>
