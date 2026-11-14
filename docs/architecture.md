@@ -77,7 +77,7 @@ Prinsip penting:
 Medivue/
 ├── docs/                          # Dokumen arsitektur, produk, design system
 ├── public/
-│   ├── Hero.png                   # Background hero landing page
+│   ├── hero-medivue.png            # Background hero landing page
 │   ├── favicon.svg
 │   └── icons.svg
 ├── src/

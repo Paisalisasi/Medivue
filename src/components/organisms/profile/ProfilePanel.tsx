@@ -123,6 +123,7 @@ export default function ProfilePanel({ variant = 'page' }: ProfilePanelProps) {
     if (!user) return;
     setIsSaving(true);
     setStatus(null);
+    window.dispatchEvent(new CustomEvent('medivue:page-loading', { detail: { active: true } }));
 
     const payload = {
       id: user.id,
@@ -162,6 +163,7 @@ export default function ProfilePanel({ variant = 'page' }: ProfilePanelProps) {
 
     await refreshProfile();
     setIsSaving(false);
+    window.dispatchEvent(new CustomEvent('medivue:page-loading', { detail: { active: false } }));
     setStatus(
       remoteOk
         ? { type: 'success', text: 'Profil tersimpan. Data ini dipakai sebagai konteks personalisasi AI saat cek gejala.' }

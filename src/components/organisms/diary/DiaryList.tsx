@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { DiaryEntry } from '@/types/user';
+import { getCachedJson, peekCache, setCache } from '@/lib/cachedJson';
 import { AlertCircle, BookHeart, Clock, Plus, Sparkles, TrendingUp } from 'lucide-react';
 
 const SEVERITY_LABELS = ['Ringan sekali', 'Ringan', 'Sedang', 'Berat', 'Sangat berat'];
@@ -13,28 +14,36 @@ function severityTone(value: number) {
   return 'bg-danger-soft text-danger-strong ring-danger-line';
 }
 
+export const DIARY_CACHE_KEY = 'diary:list';
+
 export default function DiaryList() {
-  const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const [entries, setEntries] = useState<DiaryEntry[]>(() => peekCache<DiaryEntry[]>(DIARY_CACHE_KEY) ?? []);
   const [note, setNote] = useState('');
   const [severity, setSeverity] = useState(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => peekCache<DiaryEntry[]>(DIARY_CACHE_KEY) === null);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Cache ditampilkan instan bila ada; fetch berjalan di background.
   useEffect(() => {
-    const loadEntries = async () => {
-      try {
-        const res = await fetch('/api/diary');
-        const json = await res.json();
-        if (!res.ok || !json.success) throw new Error();
-        setEntries(Array.isArray(json.data) ? json.data : []);
-      } catch {
-        setErrorMessage('Catatan belum bisa dimuat. Periksa koneksi lalu coba lagi.');
-      } finally {
+    let cancelled = false;
+    getCachedJson<DiaryEntry[]>(DIARY_CACHE_KEY, '/api/diary')
+      .then((data) => {
+        if (cancelled) return;
+        setEntries(data);
+        setErrorMessage('');
         setIsLoading(false);
-      }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+        if (peekCache<DiaryEntry[]>(DIARY_CACHE_KEY) === null) {
+          setErrorMessage('Catatan belum bisa dimuat. Periksa koneksi lalu coba lagi.');
+        }
+      });
+    return () => {
+      cancelled = true;
     };
-    void loadEntries();
   }, []);
 
   const handleAddEntry = async (event: FormEvent<HTMLFormElement>) => {
@@ -51,7 +60,9 @@ export default function DiaryList() {
       });
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || 'Catatan belum tersimpan. Coba lagi.');
-      setEntries((current) => [json.data, ...current]);
+      const next = [json.data, ...entries];
+      setCache(DIARY_CACHE_KEY, next);
+      setEntries(next);
       setNote('');
       setSeverity(2);
     } catch (error) {

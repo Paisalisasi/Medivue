@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import ShellLayout from '@/components/templates/ShellLayout';
+import AppSplash from '@/components/atoms/brand/AppSplash';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className="flex min-h-screen flex-col bg-surface text-slate-900 antialiased selection:bg-brand-200 selection:text-brand-900">
+        <AppSplash />
         <AuthProvider>
           <ShellLayout>
             {children}

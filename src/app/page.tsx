@@ -97,17 +97,17 @@ export default function HomePage() {
   return (
     <div className="overflow-hidden bg-surface text-slate-900">
       {/* ============================= HERO (Slide 1) ============================= */}
-      <section className="relative overflow-hidden section-transition-light">
+      <section className="relative flex min-h-dvh flex-col overflow-hidden section-transition-light">
         <Image
-          src="/Hero.png"
+          src="/hero-medivue.png"
           alt=""
           aria-hidden="true"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center opacity-40"
+          className="object-cover object-center opacity-80"
         />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-8 sm:px-8 sm:py-12 lg:grid-cols-[1.05fr_.95fr] lg:gap-16 lg:py-20">
+        <div className="relative mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-5 pb-8 pt-20 sm:px-8 sm:pb-12 sm:pt-24 lg:grid-cols-[1.05fr_.95fr] lg:gap-16 lg:pb-20 lg:pt-24">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-brand-700/20 bg-white/40 px-3.5 py-2 text-xs font-semibold text-brand-700">
               <span className="h-2 w-2 rounded-full bg-brand-500" />

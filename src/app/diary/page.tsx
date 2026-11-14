@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import DiaryList from '@/components/organisms/diary/DiaryList';
-import { ArrowLeft, BookHeart, Info, Wind } from 'lucide-react';
+import { BookHeart, Info, Wind } from 'lucide-react';
 import AuthGuard from '@/components/organisms/auth/AuthGuard';
 
 export const metadata = {
@@ -13,14 +13,7 @@ export default function DiaryPage() {
     <AuthGuard>
       <div className="min-h-[70vh] bg-surface">
         <div className="mx-auto max-w-4xl px-5 py-8 sm:px-8 sm:py-12">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-brand-700"
-          >
-            <ArrowLeft className="h-4 w-4" /> Kembali ke dashboard
-          </Link>
-
-          <div className="mb-7 mt-7 max-w-2xl">
+          <div className="mb-7 max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-brand-700/10 bg-white px-3 py-1.5 text-xs font-semibold text-brand-700">
               <BookHeart className="h-3.5 w-3.5" /> Ruang catatanmu
             </div>

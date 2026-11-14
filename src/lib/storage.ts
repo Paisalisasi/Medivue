@@ -118,6 +118,50 @@ export function clearCheckinDraft() {
   }
 }
 
+// Sesi triase aktif: supaya refresh di tengah tanya jawab AI tidak
+// melempar user keluar. Hanya dihapus saat user keluar eksplisit
+// (Reset Gejala / tombol kembali ke dashboard).
+const TRIAGE_SESSION_KEY = 'medivue_triage_session';
+
+export interface TriageSession {
+  formData: unknown;
+  result: unknown;
+}
+
+function isValidTriageSession(value: unknown): value is TriageSession {
+  if (!value || typeof value !== 'object') return false;
+  const session = value as Record<string, unknown>;
+  const formData = session.formData as Record<string, unknown> | null;
+  const result = session.result as Record<string, unknown> | null;
+  return (
+    !!formData &&
+    typeof formData === 'object' &&
+    typeof formData.mainSymptom === 'string' &&
+    formData.mainSymptom.trim().length > 0 &&
+    !!result &&
+    typeof result === 'object' &&
+    typeof result.urgencyLevel === 'string'
+  );
+}
+
+export function saveTriageSession(session: TriageSession) {
+  writeJson(TRIAGE_SESSION_KEY, session);
+}
+
+export function readTriageSession(): TriageSession | null {
+  const parsed = readJson(TRIAGE_SESSION_KEY);
+  return isValidTriageSession(parsed) ? parsed : null;
+}
+
+export function clearTriageSession() {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(TRIAGE_SESSION_KEY);
+  } catch {
+    // Abaikan agar alur tetap berjalan.
+  }
+}
+
 const PROFILE_CACHE_PREFIX = 'medivue_profile_';
 
 export function getProfileCacheKey(userId?: string | null) {

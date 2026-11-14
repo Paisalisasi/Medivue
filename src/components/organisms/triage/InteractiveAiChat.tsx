@@ -25,6 +25,7 @@ import BreathingExercise from '@/components/organisms/calm/BreathingExercise';
 import RedFlagAlert from '@/components/molecules/triage/RedFlagAlert';
 import Logo from '@/components/atoms/brand/Logo';
 import { URGENCY_META } from '@/lib/urgency';
+import { clearTriageSession } from '@/lib/storage';
 import type { DoctorLetterData } from '@/types/letter';
 
 interface Message {
@@ -78,6 +79,23 @@ export default function InteractiveAiChat({ result, formData, onReset }: Props) 
     window.dispatchEvent(new CustomEvent('medivue:ai-chat', { detail: { active: true } }));
     return () => {
       window.dispatchEvent(new CustomEvent('medivue:ai-chat', { detail: { active: false } }));
+    };
+  }, []);
+
+  // Kunci scroll halaman selama sesi chat agar tampilan rigid:
+  // hanya daftar pesan yang scroll, halaman web di belakangnya diam.
+  useEffect(() => {
+    const body = document.body;
+    const previousOverflow = body.style.overflow;
+    const previousPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
+
+    return () => {
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPaddingRight;
     };
   }, []);
 
@@ -571,7 +589,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
       {/* ══════════════════════════════════════════
           CHAT PANEL KANAN — Full Height
       ══════════════════════════════════════════ */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
 
         {/* Chat Top Bar */}
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 shrink-0">
@@ -579,6 +597,8 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/dashboard"
+              onClick={clearTriageSession}
+              aria-label="Keluar dari chat, kembali ke dashboard"
               className="flex lg:hidden items-center justify-center h-8 w-8 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition shrink-0"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -586,6 +606,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
 
             <Link
               href="/dashboard"
+              onClick={clearTriageSession}
               aria-label="Medivue — kembali ke dashboard"
               title="Kembali ke dashboard"
               className="flex items-center gap-2.5 min-w-0 rounded-lg transition hover:opacity-80"
@@ -692,7 +713,7 @@ Silakan tanyakan apa saja yang masih membuat Anda khawatir. Setelah selesai, kli
         )}
 
         {/* ── Chat Messages Area ── */}
-        <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 space-y-4 bg-slate-50">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 space-y-4 bg-slate-50">
 
           {/* Session start indicator */}
           <div className="text-center">

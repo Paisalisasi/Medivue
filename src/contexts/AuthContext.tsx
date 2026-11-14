@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/client';
+import { readProfileCache, saveProfileCache } from '@/lib/storage';
 import { UserProfile } from '@/types/user';
 import { AuthContext } from './AuthContextInstance';
 
@@ -13,6 +14,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
+    // Tampilkan cache lokal dulu agar halaman tidak menunggu network.
+    const cached = readProfileCache<UserProfile>(userId);
+    if (cached) setProfile(cached);
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -22,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!error && data) {
         setProfile(data as UserProfile);
+        saveProfileCache(userId, data);
       }
     } catch (err) {
       console.warn('Could not load profile from Supabase:', err);

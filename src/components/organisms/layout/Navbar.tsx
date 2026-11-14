@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/components/atoms/brand/Logo';
@@ -9,7 +10,6 @@ import {
   ArrowRight,
   LayoutDashboard,
   LogIn,
-  LogOut,
   UserRound,
 } from 'lucide-react';
 
@@ -20,13 +20,29 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const { user, signOut, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const pathname = usePathname();
 
   const isActive = (href: string) => pathname === href;
 
+  // Transparan saat di paling atas, solid + blur setelah di-scroll.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <header data-global-navbar className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white">
+    <header
+      data-global-navbar
+      className={`${pathname === '/' ? 'fixed' : 'sticky'} top-0 z-40 w-full transition-all duration-300 ${
+        scrolled
+          ? 'border-b border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-xl'
+          : 'border-b border-transparent bg-transparent'
+      }`}
+    >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8 md:h-[4.25rem]">
         <Link href="/" aria-label="Medivue beranda" className="shrink-0">
           <span className="md:hidden">
@@ -109,15 +125,6 @@ export default function Navbar() {
                 <UserRound className="h-4 w-4" aria-hidden="true" />
                 Profil
               </Link>
-              <button
-                type="button"
-                onClick={() => signOut()}
-                aria-label="Keluar dari akun"
-                title="Keluar"
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-white hover:text-slate-900"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
             </div>
           ) : (!pathname?.startsWith('/checkin') && (
             <Link

@@ -8,7 +8,9 @@ import BreathingModal from '@/components/organisms/calm/BreathingModal';
 import DoctorSummaryModal from '@/components/organisms/triage/DoctorSummaryModal';
 import DoctorLetterModal from '@/components/organisms/triage/DoctorLetterModal';
 import { getUrgencyMeta } from '@/lib/urgency';
+import { getCachedJson, peekCache } from '@/lib/cachedJson';
 import { getDisplayName } from '@/lib/displayName';
+import { DIARY_CACHE_KEY } from '@/components/organisms/diary/DiaryList';
 import { readLetters, readSessions } from '@/lib/storage';
 import type { DoctorLetterData } from '@/types/letter';
 import type { SessionHistoryItem } from '@/types/session';
@@ -136,7 +138,7 @@ export default function DashboardPage() {
   const dragStartY = useRef(0);
   const [sessions, setSessions] = useState<SessionHistoryItem[]>([]);
   const [savedLetters, setSavedLetters] = useState<DoctorLetterData[]>([]);
-  const [diaryCount, setDiaryCount] = useState(0);
+  const [diaryCount, setDiaryCount] = useState(() => peekCache<unknown[]>(DIARY_CACHE_KEY)?.length ?? 0);
   const [selectedDoctorSummary, setSelectedDoctorSummary] = useState<{ summary: { summary: string; threeQuestionsForDoctor: string[] }; urgencyLabel: string } | null>(null);
   const [selectedLetter, setSelectedLetter] = useState<DoctorLetterData | null>(null);
 
@@ -153,24 +155,17 @@ export default function DashboardPage() {
     }
   }, [user?.id]);
 
-  // Ambil jumlah catatan symptom diary untuk kartu ringkasan.
+  // Jumlah diary diambil dari cache bersama DiaryList agar tidak fetch ulang.
   useEffect(() => {
     let cancelled = false;
 
-    const loadDiaryCount = async () => {
-      try {
-        const response = await fetch('/api/diary');
-        const json = await response.json();
-        if (!response.ok || !json.success) return;
-        if (!cancelled) {
-          setDiaryCount(Array.isArray(json.data) ? json.data.length : 0);
-        }
-      } catch {
+    getCachedJson<unknown[]>(DIARY_CACHE_KEY, '/api/diary')
+      .then((data) => {
+        if (!cancelled) setDiaryCount(data.length);
+      })
+      .catch(() => {
         // Biarkan 0 bila diary belum bisa dimuat.
-      }
-    };
-
-    void loadDiaryCount();
+      });
 
     return () => {
       cancelled = true;
@@ -515,13 +510,14 @@ export default function DashboardPage() {
                   <p className="text-xs font-bold uppercase tracking-[.14em] text-brand-500">
                     Sebaran urgensi
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2 lg:grid lg:grid-cols-2">
+                  <div className="mt-3 grid grid-cols-2 gap-2">
                     {(['darurat', 'segera', 'terjadwal', 'pantau_di_rumah'] as const).map((level) => {
                       const meta = getUrgencyMeta(level);
                       const count = urgencyBreakdown[level] ?? 0;
                       return (
-                        <span key={level} className={`rounded-full px-3 py-1.5 text-center text-xs font-semibold ring-1 ${meta.pillClass}`}>
-                          {meta.shortLabel} · {count}
+                        <span key={level} className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs font-semibold ring-1 ${meta.pillClass}`}>
+                          <span className="truncate">{meta.shortLabel}</span>
+                          <span className="shrink-0 tabular-nums">{count}</span>
                         </span>
                       );
                     })}

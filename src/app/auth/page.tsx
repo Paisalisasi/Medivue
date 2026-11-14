@@ -100,6 +100,7 @@ function AuthContent() {
             setErrorMsg(error.message);
           }
         } else {
+          window.dispatchEvent(new CustomEvent('medivue:page-loading', { detail: { active: true } }));
           router.push(redirectPath);
         }
       } else {
@@ -118,6 +119,7 @@ function AuthContent() {
         } else {
           setSuccessMsg('Pendaftaran berhasil! Mengalihkan ke dashboard...');
           setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('medivue:page-loading', { detail: { active: true } }));
             router.push(redirectPath);
           }, 1200);
         }

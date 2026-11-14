@@ -7,23 +7,19 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  CheckCircle2,
   ClipboardList,
-  HeartPulse,
   Loader2,
-  ShieldCheck,
   Sparkles,
-  Wind,
   X,
 } from 'lucide-react';
 import AnxietySlider from '@/components/molecules/triage/AnxietySlider';
 import InteractiveAiChat from './InteractiveAiChat';
-import { clearCheckinDraft, readCheckinDraft, readProfileCache, readSessions, saveCheckinDraft, saveSessions } from '@/lib/storage';
+import { clearCheckinDraft, readCheckinDraft, readProfileCache, clearTriageSession, readTriageSession, readSessions, saveCheckinDraft, saveSessions, saveTriageSession } from '@/lib/storage';
 import type { SymptomPayload, TriageResult } from '@/types/triage';
 import type { SessionHistoryItem } from '@/types/session';
 import type { UserProfile } from '@/types/user';
 
-type Stage = 'intro' | 'questions' | 'review';
+type Stage = 'questions' | 'review';
 
 const TOTAL_STEPS = 5;
 const NO_ACCOMPANYING = 'Tidak ada keluhan lain';
@@ -101,7 +97,7 @@ const ANXIETY_LABELS = ['Sangat tenang', 'Sedikit khawatir', 'Cukup cemas', 'Cem
 
 export default function StepChat() {
   const { user, profile } = useAuth();
-  const [stage, setStage] = useState<Stage>('intro');
+  const [stage, setStage] = useState<Stage>('questions');
   const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState<SymptomPayload>(INITIAL_FORM);
   const [symptomInput, setSymptomInput] = useState('');
@@ -112,10 +108,17 @@ export default function StepChat() {
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [isDraftReady, setIsDraftReady] = useState(false);
 
-  // Pulihkan draft check-in agar jawaban tidak hilang saat user
-  // diarahkan ke halaman login lalu kembali ke /checkin.
+  // Pulihkan sesi triase aktif dulu agar refresh di tengah tanya jawab AI
+  // tetap di chat; kalau tidak ada, pulihkan draft check-in seperti biasa.
   useEffect(() => {
     try {
+      const session = readTriageSession();
+      if (session) {
+        setFormData({ ...INITIAL_FORM, ...(session.formData as SymptomPayload) });
+        setResult(session.result as TriageResult);
+        setIsDraftReady(true);
+        return;
+      }
       const draft = readCheckinDraft();
       if (draft) {
         const restored = { ...INITIAL_FORM, ...(draft.formData as SymptomPayload) };
@@ -123,7 +126,8 @@ export default function StepChat() {
           Boolean(restored.mainSymptom?.trim()) || draft.stage !== 'intro';
         if (hasAnswers) {
           setFormData(restored);
-          setStage(draft.stage);
+          // Draft lama bisa menyimpan stage 'intro'; sekarang langsung ke pertanyaan.
+          setStage(draft.stage === 'review' ? 'review' : 'questions');
           setStepIndex(draft.stepIndex);
           setSymptomInput(restored.mainSymptom ?? '');
         }
@@ -139,18 +143,12 @@ export default function StepChat() {
   // atau form masih kosong di tahap awal.
   useEffect(() => {
     if (!isDraftReady || result) return;
-    if (stage === 'intro' && stepIndex === 0 && !formData.mainSymptom?.trim()) return;
+    if (stepIndex === 0 && !formData.mainSymptom?.trim()) return;
     saveCheckinDraft({ stage, stepIndex, formData });
   }, [isDraftReady, stage, stepIndex, formData, result]);
 
   const updateForm = (patch: Partial<SymptomPayload>) => {
     setFormData((previous) => ({ ...previous, ...patch }));
-  };
-
-  const startQuestions = () => {
-    setSymptomInput(formData.mainSymptom ?? '');
-    setErrorMessage(null);
-    setStage('questions');
   };
 
   const goToStep = (index: number) => {
@@ -225,11 +223,7 @@ export default function StepChat() {
 
   const handleBack = () => {
     setErrorMessage(null);
-    if (stepIndex === 0) {
-      setStage('intro');
-      return;
-    }
-    setStepIndex((index) => index - 1);
+    if (stepIndex > 0) setStepIndex((index) => index - 1);
   };
 
   const editStep = (index: number) => {
@@ -279,6 +273,7 @@ export default function StepChat() {
 
       setResult(json.data as TriageResult);
       clearCheckinDraft();
+      saveTriageSession({ formData, result: json.data });
 
       try {
         const session: SessionHistoryItem = {
@@ -310,8 +305,9 @@ export default function StepChat() {
 
   const handleReset = () => {
     clearCheckinDraft();
+    clearTriageSession();
     setResult(null);
-    setStage('intro');
+    setStage('questions');
     setStepIndex(0);
     setFormData(INITIAL_FORM);
     setSymptomInput('');
@@ -337,104 +333,14 @@ export default function StepChat() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
-      {stage === 'intro' && (
-        <div className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 sm:px-8 sm:py-12">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-brand-700">
-                <HeartPulse className="h-3.5 w-3.5" />
-                Cek gejala · sekitar 2 menit
-              </span>
-              <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-[1.08] tracking-[-.045em] text-brand-700 sm:text-5xl">
-                Sebelum mulai, tarik napas sebentar.
-              </h1>
-              <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
-                Kami akan menanyakan lima hal sederhana tentang keluhanmu. Tidak ada jawaban yang
-                salah — jawab sejujur yang kamu bisa.
-              </p>
-
-              <ul className="mt-6 space-y-3">
-                {[
-                  'Pertanyaan bertahap, bisa kembali kapan saja',
-                  'Tanda bahaya diperiksa lebih dulu',
-                  'Kamu tetap yang menentukan langkah berikutnya',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm text-slate-700">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface text-brand-500">
-                      <Check className="h-3 w-3" />
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={startQuestions}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-950/10 transition hover:bg-brand-700"
-                >
-                  Mulai cek gejala <ArrowRight className="h-4 w-4" />
-                </button>
-                <Link
-                  href="/#cara-kerja"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-brand-700 transition hover:bg-surface"
-                >
-                  Lihat cara kerjanya
-                </Link>
-              </div>
-
-              <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
-                Bisa dimulai tanpa akun. Riwayat tersimpan di browser perangkat ini.
-              </p>
-            </div>
-
-            <div className="rounded-[1.75rem] border border-brand-700/10 bg-white p-6 shadow-[0_24px_80px_-40px_rgba(22,39,61,.35)]">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-[.14em] text-brand-500">Setelah selesai</p>
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-700">
-                  <ClipboardList className="h-4 w-4" />
-                </span>
-              </div>
-              <h2 className="mt-3 text-xl font-semibold tracking-tight text-brand-700">
-                Kamu akan mendapat tiga hal
-              </h2>
-
-              <div className="mt-5 space-y-3">
-                {[
-                  { icon: Sparkles, title: 'Tingkat urgensi', text: 'Darurat, segera, terjadwal, atau pantau di rumah.' },
-                  { icon: CheckCircle2, title: 'Langkah awal', text: 'Saran praktis dan tanda yang perlu diwaspadai.' },
-                  { icon: ClipboardList, title: 'Ringkasan dokter', text: 'Catatan siap dibawa saat konsultasi.' },
-                ].map(({ icon: Icon, title, text }) => (
-                  <div key={title} className="flex items-start gap-3 rounded-2xl bg-surface p-4">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-brand-500 shadow-sm">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-brand-700">{title}</p>
-                      <p className="mt-0.5 text-xs leading-5 text-slate-600">{text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-brand-100 bg-brand-50/70 p-3 text-[11px] leading-5 text-brand-900">
-                <Wind className="mt-0.5 h-4 w-4 shrink-0" />
-                Ada latihan napas singkat kalau kamu butuh jeda.
-              </div>
-
-              <p className="mt-4 border-t border-slate-100 pt-3 text-[11px] leading-5 text-slate-500">
-                Hasil Medivue adalah panduan awal, bukan diagnosis. Untuk kondisi darurat, segera ke
-                IGD atau hubungi 119.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {stage === 'questions' && (
         <div className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 sm:px-8 sm:py-10">
+          <Link
+            href="/dashboard"
+            className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-brand-700"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke dashboard
+          </Link>
           <div className="grid gap-8 lg:grid-cols-[.34fr_.66fr]">
             <aside className="hidden lg:block">
               <div className="rounded-2xl border border-brand-700/10 bg-white p-5">
@@ -484,21 +390,18 @@ export default function StepChat() {
             </aside>
 
             <main>
-              <div className="mb-4 flex items-center justify-between lg:hidden">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" /> Kembali
-                </button>
-                <span className="text-xs font-semibold text-brand-700">
-                  {stepIndex + 1} / {TOTAL_STEPS}
-                </span>
-              </div>
-
-              <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-slate-200/70 lg:hidden">
-                <div className="h-full rounded-full bg-brand-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+              <div className="mb-4 lg:hidden">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-[.14em] text-brand-500">
+                    Progres check-in
+                  </p>
+                  <span className="text-xs font-semibold text-brand-700">
+                    {stepIndex + 1} / {TOTAL_STEPS}
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200/70">
+                  <div className="h-full rounded-full bg-brand-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+                </div>
               </div>
 
               <div className="rounded-[1.75rem] border border-brand-700/10 bg-white p-5 shadow-sm sm:p-8">
@@ -700,15 +603,17 @@ export default function StepChat() {
                   </div>
                 )}
 
-                <div className="mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
-                  >
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    Kembali
-                  </button>
+                <div className={`mt-7 flex items-center border-t border-slate-100 pt-5 ${stepIndex > 0 ? 'justify-between' : 'justify-end'}`}>
+                  {stepIndex > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                      Kembali
+                    </button>
+                  )}
 
                   <button
                     type="button"
