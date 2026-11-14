@@ -71,11 +71,7 @@ export default function BreathingExercise() {
           className={`flex h-28 w-28 flex-col items-center justify-center rounded-full text-white shadow-md transition-all duration-1000 ease-in-out ${
             isActive ? phaseColor : 'bg-brand-500 scale-100'
           }`}
-        >
-          <span className="text-xs font-medium uppercase tracking-wider">
-            {isActive ? phase : 'Mulai'}
-          </span>
-          <span className="text-2xl font-bold">{isActive ? secondsLeft : '4s'}</span>
+        >          <span className="text-2xl font-bold">{isActive ? secondsLeft : '4s'}</span>
         </div>
       </div>
 

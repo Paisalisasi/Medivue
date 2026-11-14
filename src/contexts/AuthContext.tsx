@@ -169,10 +169,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
+    window.dispatchEvent(new CustomEvent('medivue:page-loading', { detail: { active: true } }));
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+    } catch (error) {
+      window.dispatchEvent(new CustomEvent('medivue:page-loading', { detail: { active: false } }));
+      throw error;
+    }
   };
 
   const refreshProfile = async () => {

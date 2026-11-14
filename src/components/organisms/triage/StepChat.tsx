@@ -334,12 +334,12 @@ export default function StepChat() {
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       {stage === 'questions' && (
-        <div className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 sm:px-8 sm:py-10">
+        <div className="mx-auto w-full max-w-6xl flex-1 px-5 pb-8 pt-3 sm:px-8 sm:pb-10 sm:pt-4">
           <Link
             href="/dashboard"
-            className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-brand-700"
+            className="mb-4 inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 shadow-xs transition hover:border-brand-300 hover:bg-brand-50"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke dashboard
+            <ArrowLeft className="h-4 w-4" /> Kembali ke dashboard
           </Link>
           <div className="grid gap-8 lg:grid-cols-[.34fr_.66fr]">
             <aside className="hidden lg:block">

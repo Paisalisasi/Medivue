@@ -148,7 +148,7 @@ function AuthContent() {
     <div className="mx-auto w-full max-w-6xl px-5 pb-10 pt-2 sm:px-8 sm:pb-16 sm:pt-4">
       <Link
         href="/"
-        className="-ml-1.5 inline-flex min-h-11 items-center gap-2 px-1.5 text-sm font-medium text-slate-500 transition hover:text-brand-700"
+        className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 shadow-xs transition hover:border-brand-300 hover:bg-brand-50"
       >
         <ArrowLeft className="h-4 w-4" /> Kembali ke beranda
       </Link>
